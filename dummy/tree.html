@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tree maker 🌳</title>
+    <link rel="stylesheet" href="tree.css">
+    <script type="text/javascript" src="tree.js"></script>
+</head>
+<body>
+<div id="my_tree"></div>
+<script type="text/javascript">
+    const nestedTree = {
+        8: '',
+        9: {
+            10: '',
+            11: {
+                13: '',
+            },
+        },
+        12: '',
+    }
+
+    const tree = {
+        1: {
+            2: '',
+            3: {
+                6: '',
+                7: nestedTree,
+            },
+            4: {
+                7: nestedTree,
+            },
+            5: ''
+        },
+    };
+
+    const params = {
+        1: {trad: 'Card 1'},
+        2: {trad: 'Card 2'},
+        3: {trad: 'Card 3'},
+        4: {trad: 'Card 4'},
+        5: {trad: 'Card 5'},
+        6: {trad: 'Card 6'},
+        7: {trad: 'Card 7'},
+    };
+
+    treeMaker.default(tree, {
+        id: 'my_tree',
+        card_click: function (element) {
+            console.log(element);
+        },
+        treeParams: params,
+        link_width: '4px',
+        link_color: '#2199e8',
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-3">
+        <div class="col-10">
+            <h3>Projects</h3>
+        </div>
+        <div class="col-2 align-self-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+                New Project
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4">
+            Title
+        </div>
+        <div class="col-4">
+            Description
+        </div>
+        <div class="col-2">
+            Start Date
+        </div>
+        <div class="col-2">
+            End Date
+        </div>
+    </div>
+    {% for project in projects %}
+    <a href="{{ url_for('project', project_id=project['_id']) }}">
+        <div class="row">
+            <div class="col-4">
+                {{ project['title']}}
+            </div>
+            <div class="col-4">
+                {{ project['description']}}
+            </div>
+            <div class="col-2">
+                {{ project['start_date'].date() }}
+            </div>
+            <div class="col-2">
+                {{ project['end_date'].date() }}
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+
+<div class="modal fade" id="newProjectModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newProjectLabel" aria-hidden="true">
+    <form method="post" class="needs-validation" novalidate>
+    {{ form.csrf_token }}
+    {% if form.csrf_token.errors %}
+        <div class="warning">You have submitted an invalid CSRF token</div>
+    {% endif %}
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="newProjectLabel">New Project</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                {{ form.name.label(class="form-label")}}
+                {{ form.name(class="form-control") }}
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+                {% if form.name.errors %}
+                    <ul class="errors">
+                    {% for error in form.name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label")}}
+                {{ form.description(class="form-control") }}
+                {% if form.description.errors %}
+                    <ul class="errors">
+                    {% for error in form.description.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.start_date.label(class="form-label")}}
+                {{ form.start_date(class="form-control") }}
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+                {% if form.start_date.errors %}
+                    <ul class="errors">
+                    {% for error in form.start_date.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.end_date.label(class="form-label")}}
+                {{ form.end_date(class="form-control") }}
+                <div class="invalid-feedback">
+                    Required.
+                </div>
+                {% if form.end_date.errors %}
+                    <ul class="errors">
+                    {% for error in form.end_date.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Class Days</label>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="mb-3">
+                            {{ form.monday.label(class="form-label")}}
+                            {{ form.monday(class="form-control") }}
+                            {% if form.monday.errors %}
+                                <ul class="errors">
+                                {% for error in form.monday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="mb-3">
+                            {{ form.tuesday.label(class="form-label")}}
+                            {{ form.tuesday(class="form-control") }}
+                            {% if form.tuesday.errors %}
+                                <ul class="errors">
+                                {% for error in form.tuesday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="mb-3">
+                            {{ form.wednesday.label(class="form-label")}}
+                            {{ form.wednesday(class="form-control") }}
+                            {% if form.wednesday.errors %}
+                                <ul class="errors">
+                                {% for error in form.wednesday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="mb-3">
+                            {{ form.thursday.label(class="form-label")}}
+                            {{ form.thursday(class="form-control") }}
+                            {% if form.thursday.errors %}
+                                <ul class="errors">
+                                {% for error in form.thursday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="mb-3">
+                            {{ form.friday.label(class="form-label")}}
+                            {{ form.friday(class="form-control") }}
+                            {% if form.friday.errors %}
+                                <ul class="errors">
+                                {% for error in form.friday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="mb-3">
+                            {{ form.saturday.label(class="form-label")}}
+                            {{ form.saturday(class="form-control") }}
+                            {% if form.saturday.errors %}
+                                <ul class="errors">
+                                {% for error in form.saturday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- <div class="mb-3">
+                <label for="endDateInput" class="form-label">Class Days</label>
+                <div class="row">
+                    <div class="col-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="mondayCheck" name="mondayCheck">
+                            <label class="form-check-label" for="mondayCheck">
+                                Monday
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="" name="mondayHrs" aria-label="Monday hours" aria-describedby="monday-hrs">
+                            <span class="input-group-text" id="monday-hrs">hrs</span>
+                        </div>
+                    </div>
+                </div>                   
+                <div class="row">
+                    <div class="col-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="tuesdayCheck" name="tuesdayCheck">
+                            <label class="form-check-label" for="tuesdayCheck">
+                                Tuesday
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="" name="tuesdayHrs" aria-label="Tuesday hours" aria-describedby="tuesday-hrs">
+                            <span class="input-group-text" id="tuesday-hrs">hrs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="wednesdayCheck" name="wednesdayCheck">
+                            <label class="form-check-label" for="wednesdayCheck">
+                                Wednesday
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="" name="wednesdayHrs" aria-label="Wednesday hours" aria-describedby="wednesday-hrs">
+                            <span class="input-group-text" id="wednesday-hrs">hrs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="thursdayCheck" name="thursdayCheck">
+                            <label class="form-check-label" for="thursdayCheck">
+                                Thursday
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="" name="thursdayHrs" aria-label="Thursday hours" aria-describedby="thursday-hrs">
+                            <span class="input-group-text" id="thursday-hrs">hrs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="fridayCheck" name="fridayCheck">
+                            <label class="form-check-label" for="fridayCheck">
+                                Friday
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="" name="fridayHrs" aria-label="Friday hours" aria-describedby="friday-hrs">
+                            <span class="input-group-text" id="friday-hrs">hrs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3 align-self-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="saturdayCheck" name="saturdayCheck">
+                            <label class="form-check-label" for="saturdayCheck">
+                                Saturday
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="" name="saturdayHrs" aria-label="Saturday hours" aria-describedby="saturday-hrs">
+                            <span class="input-group-text" id="saturday-hrs">hrs</span>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

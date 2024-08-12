@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='hcharts.css')}}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3>{{ project_title }}</h3>
+    <div class="mt-3">
+      <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="nav-link {% if active_tab == 'nav-kanban-tab' %} active {% endif %}" id="nav-kanban-tab" data-bs-toggle="tab" data-bs-target="#nav-kanban" type="button" role="tab" aria-controls="nav-home" aria-selected="true">KANBAN</button>
+            <button class="nav-link {% if active_tab == 'nav-wbs-tab' %} active {% endif %}" id="nav-wbs-tab" data-bs-toggle="tab" data-bs-target="#nav-wbs" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">WBS</button>
+            <button class="nav-link {% if active_tab == 'nav-ew-tab' %} active {% endif %}" id="nav-ew-tab" data-bs-toggle="tab" data-bs-target="#nav-ew" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Estimating WS</button>
+            <button class="nav-link {% if active_tab == 'nav-gantt-tab' %} active {% endif %}" id="nav-gantt-tab" data-bs-toggle="tab" data-bs-target="#nav-gantt" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">GANTT</button>
+            <div class="ms-auto">
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">New Task</button>
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">Edit Project</button>    
+            </div>
+                              
+        </div>
+      </nav>
+    </div>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade {% if active_tab == 'nav-kanban-tab' %} show active {% endif %}" id="nav-kanban" role="tabpanel" aria-labelledby="nav-kanban-tab">
+            {% for task in all_tasks %}
+            <div class="row">
+              <div class="col">
+                {{ tasks }}
+                {{ task['task_number']}}-{{ task['title']}}-{{ task['start_date']}}-{{ task['end_date']}}
+              </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="tab-pane fade {% if active_tab == 'nav-wbs-tab' %} show active {% endif %}" id="nav-wbs" role="tabpanel" aria-labelledby="nav-wbs-tab">
+          <figure class="highcharts-figure">
+            <div id="wbs-container"></div>
+        </figure>
+        
+        </div>
+        <div class="tab-pane fade {% if active_tab == 'nav-ew-tab' %} show active {% endif %}" id="nav-ew" role="tabpanel" aria-labelledby="nav-ew-tab">ew</div>
+        <div class="tab-pane fade {% if active_tab == 'nav-gantt-tab' %} show active {% endif %}" id="nav-gantt" role="tabpanel" aria-labelledby="nav-gantt-tab">
+          <div id="gantt-container"></div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    
+</div>
+<div class="modal fade" id="addTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addTaskLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="{{ url_for('project', project_id=project_id) }}" method="post" class="form needs-validation" id="addTaskForm" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="modal-header">
+            <h5 class="modal-title" id="addTaskLabel">New Task</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div class="mb-3">
+                {{ form.parent_task.label(class="form-label")}}
+                {{ form.parent_task(class="form-select") }}
+                {% if form.parent_task.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.parent_task.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+              </div>
+              <div class="mb-3">
+                  {{ form.task_number.label(class="form-label") }}
+                  {{ form.task_number(class="form-control") }}
+                  <div class="invalid-feedback fe-validation">
+                    Required!
+                  </div>
+                  {% if form.task_number.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.task_number.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+              </div>
+              <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+                <div class="invalid-feedback fe-validation">
+                  Required!
+                </div>
+                {% if form.title.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.title.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.start_date.label(class="form-label") }}
+                {{ form.start_date(class="form-control") }}
+                {% if form.start_date.errors %}
+                  <ul class="errors invalid-feedback">
+                  {% for error in form.start_date.errors %}
+                      <li>{{ error }}</li>
+                  {% endfor %}
+                  </ul>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.end_date.label(class="form-label") }}
+                {{ form.end_date(class="form-control") }}
+                {% if form.end_date.errors %}
+                  <ul class="errors invalid-feedback">
+                  {% for error in form.end_date.errors %}
+                      <li>{{ error }}</li>
+                  {% endfor %}
+                  </ul>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.owners.label(class="form-label") }}
+              {{ form.owners(class="form-check list-unstyled") }}
+              {% if form.owners.errors %}
+                <ul class="errors invalid-feedback">
+                {% for error in form.owners.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+              
+            <div class="mb-3">
+              {{ form.heirarchy.label(class="form-label") }}
+              {{ form.heirarchy(class="form-control") }}
+              <div class="invalid-feedback fe-validation">
+                Should be between 1 - 100
+              </div>
+              {% if form.heirarchy.errors %}
+                <ul class="errors invalid-feedback">
+                {% for error in form.heirarchy.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+              
+            <div class="mb-3">
+              {{ form.completion.label(class="form-label") }}
+              {{ form.completion(class="form-control") }}
+              <div class="invalid-feedback fe-validation">
+                Should be between 0 - 100
+              </div>
+              {% if form.completion.errors %}
+                <ul class="errors invalid-feedback">
+                {% for error in form.completion.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.dependency.label(class="form-label") }}
+              {{ form.dependency(class="form-select") }}
+              {% if form.dependency.errors %}
+                  <ul class="errors invalid-feedback">
+                  {% for error in form.dependency.errors %}
+                      <li>{{ error }}</li>
+                  {% endfor %}
+                  </ul>
+              {% endif %}
+            </div> 
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            {{ form.submit(class="btn btn-primary") }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/sankey.js"></script>
+
+<script src="https://code.highcharts.com/modules/organization.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/gantt/modules/pattern-fill.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<script>
+  let allTasks = {{ all_tasks|safe }};
+  let projectTitle = "{{ title|safe }}";
+</script>
+<script src="{{ url_for('static', filename='hcharts.js') }}"></script>
+<script>
+  var tabEl = document.querySelectorAll('button[data-bs-toggle="tab"]')
+  var form = document.getElementById('addTaskForm')
+  tabEl.forEach(el => {
+      el.addEventListener('click', function (event) {
+      console.log(event.target.id);
+      form.action += '?active_tab=' + event.target.id;
+    })
+  });
+  var modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+  {% if not valid_form %}
+    modal.show();
+  {% endif %}
+
+//   // Example starter JavaScript for disabling form submissions if there are invalid fields
+// (function () {
+//   'use strict'
+
+//   // Fetch all the forms we want to apply custom Bootstrap validation styles to
+//   var forms = document.querySelectorAll('.needs-validation')
+
+//   // Loop over them and prevent submission
+//   Array.prototype.slice.call(forms)
+//     .forEach(function (form) {
+//       form.addEventListener('submit', function (event) {
+//         if (!form.checkValidity()) {
+//           event.preventDefault()
+//           event.stopPropagation()
+//         }
+
+//         form.classList.add('was-validated')
+//       }, false)
+//     })
+// })()
+  
+
+</script>
+{% endblock %}
