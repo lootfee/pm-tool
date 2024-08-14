@@ -24,12 +24,13 @@
     <div class="tab-content" id="nav-tabContent">
         <div class="tab-pane fade {% if active_tab == 'nav-kanban-tab' %} show active {% endif %}" id="nav-kanban" role="tabpanel" aria-labelledby="nav-kanban-tab">
             {% for task in all_tasks %}
+            {% if task['children']|length == 0 %}
             <div class="row">
               <div class="col">
-                {{ tasks }}
                 {{ task['task_number']}}-{{ task['title']}}-{{ task['start_date']}}-{{ task['end_date']}}
               </div>
             </div>
+            {% endif %}
             {% endfor %}
         </div>
         <div class="tab-pane fade {% if active_tab == 'nav-wbs-tab' %} show active {% endif %}" id="nav-wbs" role="tabpanel" aria-labelledby="nav-wbs-tab">

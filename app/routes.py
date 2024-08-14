@@ -6,11 +6,13 @@ from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlparse
 from bson import ObjectId
 from bson.errors import InvalidId
+from pymongo.errors import WriteError
 import requests
 from uuid import uuid4
 from datetime import datetime, date
 
 from functools import wraps
+from pprint import pprint
 
 # decorator
 def user_project_required(f):
@@ -32,16 +34,35 @@ def user_project_required(f):
     return wrapped
 
 
-# sort tasks by heirarchy and group by parent
+# sort tasks by heirarchy and by parent
 def sort_tasks(project_id: str, parent_task_id: str, task_list: list):
     _tasks = sorted(list(TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})), key=lambda d: d['heirarchy'])
     for t in _tasks:
         # print(t)
         task_list.append(t)
         sort_tasks(project_id, str(t["_id"]), task_list)
-
     return task_list
 
+
+# updating child tasks of each tasks
+# not in any route, only used for updating db
+def update_child_tasks(project_id:str, parent_task_id:str):
+    _tasks = TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})
+    _t = None
+    for t in _tasks:
+        if parent_task_id != "0":
+            print(parent_task_id)
+            TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': str(t["_id"])}}, upsert=True)
+            print(f'{TASKS.find_one(ObjectId(t["_id"]))}')
+        update_child_tasks(project_id, str(t["_id"]))
+        # try:
+        #     TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': str(t["_id"])}}, upsert=True)
+        #     print(f'{TASKS.find_one(ObjectId(t["_id"]))}')
+        # except WriteError:
+        #     print('error')
+        #     TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$push': {'children': str(t["_id"])}}, upsert=True)
+        
+    return "done"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -82,7 +103,7 @@ def index():
     return render_template('index.html', title='PM TOOL', projects=all_projects, form=form)
 
 
-
+# used single route for all because it just uses the same TaskForm and charting is done client side 
 @app.route('/project/<string:project_id>/', methods=['GET', 'POST'])
 @login_required
 @user_project_required
@@ -117,12 +138,17 @@ def project(project_id):
         except AttributeError:
             start_date = ""
             end_date = ""
+        try:
+            children = task['children']
+        except KeyError:
+            children = []
         all_tasks.append({'_id': str(task['_id']), 'project_id': task['project_id'], "task_number": task['task_number'], "title": task['title'], 
                                     "start_date": start_date, "end_date": end_date, "parent_task_id": task['parent_task_id'], 
-                                    "level": task['level'], "owners": owners})
+                                    "level": task['level'], "owners": owners, "children": children})
         form.parent_task.choices.append((task['_id'], task['title']))
         form.dependency.choices.append((task['_id'], task['title']))
 
+    pprint(all_tasks)
     active_tab = request.args.get('active_tab', str)
     valid_tabs = ["nav-kanban-tab", "nav-ew-tab", "nav-gantt-tab", "nav-wbs-tab"]
     if not active_tab or active_tab not in valid_tabs:
@@ -131,7 +157,7 @@ def project(project_id):
     valid_form = True
     if request.method == 'POST':
         valid_form = form.validate()
-    print(valid_form)
+    
     if form.validate_on_submit():
         task_number = form.task_number.data
         title = form.title.data
@@ -150,13 +176,17 @@ def project(project_id):
             parent_task = TASKS.find_one({"_id": ObjectId(request.form.get('parent_task'))})
             level = parent_task["level"] + 1
             parent_task_id = str(parent_task["_id"])
+            
         except InvalidId:
             parent_task_id = "0"
             level = 0
         
-        TASKS.insert_one({'project_id': project_id, "task_number": task_number, "title": title, 
+        new_task = TASKS.insert_one({'project_id': project_id, "task_number": task_number, "title": title, 
                                     "start_date": start_date, "end_date": end_date, "parent_task_id": parent_task_id, 
-                                    "level": level,"heirarchy": heirarchy, "completion": completion, "dependency": dependency, "owners": owners})
+                                    "level": level,"heirarchy": heirarchy, "completion": completion, 
+                                    "dependency": dependency, "owners": owners, "children": []})
+        TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$push': {'children': str(new_task.inserted_id)}}, upsert=True)
+        # to open the active tab where the user is after page refresh/form submit
         active_tab = request.args.get('active_tab', str)
         next_page = url_for('project', project_id=project_id)
         if not active_tab or urlparse(next_page).netloc != '':
