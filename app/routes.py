@@ -1,6 +1,6 @@
 from app import app, PROJECTS, TASKS, USERS, USER_PROJECTS
 from flask import flash, render_template, redirect, url_for, request
-from app.forms import ProjectForm, TaskForm, LoginForm, RegisterForm
+from app.forms import ProjectForm, TaskForm, LoginForm, RegisterForm, AddMemberForm
 from app.models import User
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlparse
@@ -34,9 +34,9 @@ def user_project_required(f):
     return wrapped
 
 
-# sort tasks by heirarchy and by parent
+# sort tasks by hierarchy and by parent
 def sort_tasks(project_id: str, parent_task_id: str, task_list: list):
-    _tasks = sorted(list(TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})), key=lambda d: d['heirarchy'])
+    _tasks = sorted(list(TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})), key=lambda d: d['hierarchy'])
     for t in _tasks:
         # print(t)
         task_list.append(t)
@@ -75,17 +75,20 @@ def index():
         description = form.description.data
         start_date = datetime.combine(form.start_date.data, datetime.min.time())
         end_date = datetime.combine(form.end_date.data, datetime.min.time())
-        time0 = datetime.strptime('000000',"%H%M%S").time()
-        print(time0)
-        monday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.monday.data)).total_seconds()/3600 if form.monday.data is not None else 0
-        tuesday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.tuesday.data)).total_seconds()/3600 if form.tuesday.data is not None else 0
-        wednesday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.wednesday.data)).total_seconds()/3600 if form.wednesday.data is not None else 0
-        thursday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.thursday.data)).total_seconds()/3600 if form.thursday.data is not None else 0
-        friday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.friday.data)).total_seconds()/3600 if form.friday.data is not None else 0
-        saturday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.saturday.data)).total_seconds()/3600 if form.saturday.data is not None else 0
-        # sunday_hrs = form.sunday.data
-        print(time0)
-        print(monday_hrs)
+        # time0 = datetime.strptime('000000',"%H%M%S").time()
+        # monday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.monday.data)).total_seconds()/3600 if form.monday.data is not None else 0
+        # tuesday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.tuesday.data)).total_seconds()/3600 if form.tuesday.data is not None else 0
+        # wednesday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.wednesday.data)).total_seconds()/3600 if form.wednesday.data is not None else 0
+        # thursday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.thursday.data)).total_seconds()/3600 if form.thursday.data is not None else 0
+        # friday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.friday.data)).total_seconds()/3600 if form.friday.data is not None else 0
+        # saturday_hrs = (datetime.combine(date.today(), time0) - datetime.combine(date.today(), form.saturday.data)).total_seconds()/3600 if form.saturday.data is not None else 0
+        # # sunday_hrs = form.sunday.data
+        monday_hrs = form.monday.data
+        tuesday_hrs = form.tuesday.data
+        wednesday_hrs = form.wednesday.data
+        thursday_hrs = form.thursday.data
+        friday_hrs = form.friday.data
+        saturday_hrs = form.saturday.data
         new_project = PROJECTS.insert_one({"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
                                            'class_days': {'monday': monday_hrs, 'tuesday': tuesday_hrs, 'wednesday': wednesday_hrs,
                                                           'thursday': thursday_hrs, 'friday': friday_hrs, 'saturday': saturday_hrs}})
@@ -96,10 +99,11 @@ def index():
     all_projects = []
     _all_user_projects = USER_PROJECTS.find_one({'user_id': current_user.id})
     # print(_all_user_projects)
-    all_user_projects = _all_user_projects['projects']
-    for project in all_user_projects:
-        p = PROJECTS.find_one(ObjectId(project))
-        all_projects.append(p)
+    if _all_user_projects is not None:
+        all_user_projects = _all_user_projects['projects']
+        for project in all_user_projects:
+            p = PROJECTS.find_one(ObjectId(project))
+            all_projects.append(p)
     return render_template('index.html', title='PM TOOL', projects=all_projects, form=form)
 
 
@@ -133,22 +137,32 @@ def project(project_id):
         owners = ', '.join(_owners)
         
         try:
-            start_date = task['start_date'].strftime("%m/%d/%Y")
-            end_date = task['end_date'].strftime("%m/%d/%Y")
+            expected_start_date = task['expected_start_date'].strftime("%m/%d/%Y")
+            expected_end_date = task['expected_end_date'].strftime("%m/%d/%Y")
         except AttributeError:
-            start_date = ""
-            end_date = ""
+            expected_start_date = ""
+            expected_end_date = ""
+            
+        try:
+            actual_start_date = task['actual_start_date'].strftime("%m/%d/%Y")
+            actual_end_date = task['actual_end_date'].strftime("%m/%d/%Y")
+        except AttributeError:
+            actual_start_date = ""
+            actual_end_date = ""
+            
         try:
             children = task['children']
         except KeyError:
             children = []
         all_tasks.append({'_id': str(task['_id']), 'project_id': task['project_id'], "task_number": task['task_number'], "title": task['title'], 
-                                    "start_date": start_date, "end_date": end_date, "parent_task_id": task['parent_task_id'], 
-                                    "level": task['level'], "owners": owners, "children": children})
+                                    "expected_start_date": expected_start_date, "expected_end_date": expected_end_date, 
+                                    "actual_start_date": actual_start_date, "actual_end_date": actual_end_date, 
+                                    "parent_task_id": task['parent_task_id'], "completion": task['completion'], 
+                                    "dependency": task['dependency'], "level": task['level'], "owners": owners, "children": children})
         form.parent_task.choices.append((task['_id'], task['title']))
         form.dependency.choices.append((task['_id'], task['title']))
 
-    pprint(all_tasks)
+    
     active_tab = request.args.get('active_tab', str)
     valid_tabs = ["nav-kanban-tab", "nav-ew-tab", "nav-gantt-tab", "nav-wbs-tab"]
     if not active_tab or active_tab not in valid_tabs:
@@ -161,17 +175,26 @@ def project(project_id):
     if form.validate_on_submit():
         task_number = form.task_number.data
         title = form.title.data
-        start_date = ""
-        end_date = ""
-        if form.start_date.data:
-            start_date = datetime.combine(form.start_date.data, datetime.min.time())
-        if form.end_date.data:
-            end_date = datetime.combine(form.end_date.data, datetime.min.time())
-        heirarchy = form.heirarchy.data
+        expected_start_date = ""
+        expected_end_date = ""
+        actual_start_date = ""
+        actual_end_date = ""
+        if form.expected_start_date.data:
+            expected_start_date = datetime.combine(form.expected_start_date.data, datetime.min.time())
+        if form.expected_end_date.data:
+            expected_end_date = datetime.combine(form.expected_end_date.data, datetime.min.time())
+        if form.actual_start_date.data:
+            actual_start_date = datetime.combine(form.actual_start_date.data, datetime.min.time())
+        if form.actual_end_date.data:
+            actual_end_date = datetime.combine(form.actual_end_date.data, datetime.min.time())
+        
+        # hierarchy will be used for sorting tasks
+        hierarchy = form.hierarchy.data
         completion = form.completion.data
         dependency = form.dependency.data
         owners = form.owners.data
     
+        # levels are used in WBS
         try:
             parent_task = TASKS.find_one({"_id": ObjectId(request.form.get('parent_task'))})
             level = parent_task["level"] + 1
@@ -182,11 +205,17 @@ def project(project_id):
             level = 0
         
         new_task = TASKS.insert_one({'project_id': project_id, "task_number": task_number, "title": title, 
-                                    "start_date": start_date, "end_date": end_date, "parent_task_id": parent_task_id, 
-                                    "level": level,"heirarchy": heirarchy, "completion": completion, 
+                                    "expected_start_date": expected_start_date, "expected_end_date": expected_end_date, 
+                                    "actual_start_date": actual_start_date, "actual_end_date": actual_end_date,
+                                    "parent_task_id": parent_task_id, 
+                                    "level": level,"hierarchy": hierarchy, "completion": completion, 
                                     "dependency": dependency, "owners": owners, "children": []})
-        TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$push': {'children': str(new_task.inserted_id)}}, upsert=True)
+        
+        if parent_task_id != "0": 
+            TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$push': {'children': str(new_task.inserted_id)}}, upsert=True)
+        
         # to open the active tab where the user is after page refresh/form submit
+        print(request.args)
         active_tab = request.args.get('active_tab', str)
         next_page = url_for('project', project_id=project_id)
         if not active_tab or urlparse(next_page).netloc != '':
@@ -197,12 +226,78 @@ def project(project_id):
 
 
 
-# # page for kanban board
-# @app.route('/kanban/')
-# @login_required
-# def kanban():
-#     return render_template('kanban.html', title='KANBAN')
+@app.route('/edit_project/<string:project_id>/', methods=['GET', 'POST'])
+@login_required
+@user_project_required
+def edit_project(project_id):
+    add_member_form = AddMemberForm()
+    form = ProjectForm()
+    edit_project = PROJECTS.find_one({'_id': ObjectId(project_id)})
+    project_members = []
+    for member in edit_project['members']:
+        m = USERS.find_one(ObjectId(member))
+        project_members.append((str(m['_id']), m['name']))
+    if form.validate_on_submit():
+        title = form.name.data
+        description = form.description.data
+        start_date = datetime.combine(form.start_date.data, datetime.min.time())
+        end_date = datetime.combine(form.end_date.data, datetime.min.time())
+        monday_hrs = form.monday.data
+        tuesday_hrs = form.tuesday.data
+        wednesday_hrs = form.wednesday.data
+        thursday_hrs = form.thursday.data
+        friday_hrs = form.friday.data
+        saturday_hrs = form.saturday.data
+ 
+        PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$set': {"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
+                                           'class_days': {'monday': monday_hrs, 'tuesday': tuesday_hrs, 'wednesday': wednesday_hrs,
+                                                          'thursday': thursday_hrs, 'friday': friday_hrs, 'saturday': saturday_hrs}}}, upsert=False)
 
+        return redirect(url_for('edit_project', project_id=project_id))
+
+    elif request.method == 'GET':
+        form.name.data = edit_project['title']
+        form.description.data = edit_project['description']
+        form.start_date.data = edit_project['start_date']
+        form.end_date.data = edit_project['end_date']
+        form.monday.data = edit_project['class_days']['monday']
+        form.tuesday.data = edit_project['class_days']['tuesday']
+        form.wednesday.data = edit_project['class_days']['wednesday']
+        form.thursday.data = edit_project['class_days']['thursday']
+        form.friday.data = edit_project['class_days']['friday']
+        form.saturday.data = edit_project['class_days']['saturday']
+    return render_template('edit_project.html', title='PM TOOL', form=form, project_title=edit_project['title'], 
+                           project_members=project_members, project_id=project_id, add_member_form=add_member_form)
+
+
+@app.route('/add_member/<string:project_id>/', methods=['GET', 'POST'])
+@login_required
+@user_project_required
+def add_member(project_id):
+    project = PROJECTS.find_one({'_id': ObjectId(project_id)})
+    form = AddMemberForm()
+    if form.validate_on_submit():
+        email = f'{form.email.data}@saskpolytech.ca'
+        member = USERS.find_one({'email': email})
+        if member is not None:   
+            USER_PROJECTS.update_one({'user_id':str(member['_id'])}, {'$push': {'projects': str(project['_id'])}}, upsert=True)
+            PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$push': {'members': str(member['_id'])}}, upsert=True)
+        else:
+            flash(f'No user is registered with {email} email address.', 'alert-warning')
+    return redirect(url_for('edit_project', project_id=project_id))
+
+
+@app.route('/remove_member/<string:project_id>/<string:member_id>', methods=['GET', 'POST'])
+@login_required
+@user_project_required
+def remove_member(project_id, member_id):
+    project = PROJECTS.find_one({'_id': ObjectId(project_id)})
+    member = USERS.find_one({'_id': ObjectId(member_id)})
+    
+    USER_PROJECTS.update_one({'user_id':str(member['_id'])}, {'$pull': {'projects': str(project['_id'])}})
+    PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'members': str(member['_id'])}})
+    flash(f'User {member['name']} has been removed from the project', 'alert-info')
+    return redirect(url_for('edit_project', project_id=project_id))
 
 
 @app.route('/register', methods=['GET', 'POST'])

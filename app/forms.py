@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, SelectMultipleField, DateField, TimeField
 # from wtforms.fields import DateField
-from wtforms.widgets import CheckboxInput, ListWidget, TableWidget
+from wtforms.widgets import CheckboxInput, ListWidget, TableWidget, RangeInput
 from wtforms.validators import DataRequired, Optional, NumberRange
 
 
@@ -19,9 +19,14 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Register')
 
 
+class AddMemberForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired()])
+    submit = SubmitField('Add')
+
 class MultiCheckboxField(SelectMultipleField):
     widget = ListWidget(prefix_label=False)
     option_widget = CheckboxInput()
+    # option_widget = RangeInput()
 
 
 class ProjectForm(FlaskForm):
@@ -29,13 +34,13 @@ class ProjectForm(FlaskForm):
     description = TextAreaField('Description')
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
-    monday = TimeField('Monday', validators=[Optional()])
-    tuesday = TimeField('Tuesday', validators=[Optional()])
-    wednesday = TimeField('Wednesday', validators=[Optional()])
-    thursday = TimeField('Thursday', validators=[Optional()])
-    friday = TimeField('Friday', validators=[Optional()])
-    saturday = TimeField('Saturday', validators=[Optional()])
-    sunday = TimeField('Sunday', validators=[Optional()])
+    monday = IntegerField('Monday', validators=[Optional()])
+    tuesday = IntegerField('Tuesday', validators=[Optional()])
+    wednesday = IntegerField('Wednesday', validators=[Optional()])
+    thursday = IntegerField('Thursday', validators=[Optional()])
+    friday = IntegerField('Friday', validators=[Optional()])
+    saturday = IntegerField('Saturday', validators=[Optional()])
+    # sunday = IntegerField('Sunday', validators=[Optional()])
     # class_days = MultiCheckboxField('Class Days', coerce=str, choices=[('monday', 'Monday'), 
     #                                                            ('tuesday', 'Tuesday'), 
     #                                                            ('wednesday', 'Wednesday'),
@@ -50,9 +55,11 @@ class TaskForm(FlaskForm):
     title = StringField('Task', validators=[DataRequired()])
     task_number = StringField('Task Number', validators=[DataRequired()])
     parent_task = SelectField('Parent Task', validators=[DataRequired()], coerce=str)
-    start_date = DateField('Start Date', validators=[Optional()])
-    end_date = DateField('End Date', validators=[Optional()])
-    heirarchy = IntegerField('Heirarchy', validators=[NumberRange(min=1, max=100)], default=1)
+    expected_start_date = DateField('Expected Start Date', validators=[Optional()])
+    expected_end_date = DateField('Expected End Date', validators=[Optional()])
+    actual_start_date = DateField('Actual Start Date', validators=[Optional()])
+    actual_end_date = DateField('Actual End Date', validators=[Optional()])
+    hierarchy = IntegerField('Hierarchy', validators=[NumberRange(min=1, max=100)], default=1)
     completion = IntegerField('Completion', validators=[NumberRange(min=0, max=100)], default=0)
     dependency = SelectField('Dependency', coerce=str)
     # owners = SelectMultipleField('Owners', validators=[DataRequired()], 
@@ -74,3 +81,4 @@ class TaskForm(FlaskForm):
     #         return False                                                        
 
     #     return True 
+    

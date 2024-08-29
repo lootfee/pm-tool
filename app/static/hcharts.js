@@ -1,65 +1,108 @@
-  let nodesArr = [
-    {
-        id: 0,
-        name: "Team A",
-        title: projectTitle,
-        // layout: 'hanging'
-    }
-  ];
-  let dataArr = [];
-  let ganttDataArr = [];
+    let nodesArr = [
+            {
+                id: '0',
+                name: projectTitle,
+                title: '',
+                layout: 'hanging'
+            }
+        ];
+    let dataArr = [];
+    let ganttDataArr = [];
 
-  for(var i=0; i<allTasks.length; i++){
-    nodesArr.push(
-        {
-            id: allTasks[i]['_id'],
-            name: allTasks[i]['task_number'],
-            title: allTasks[i]['title'],
-            layout: 'hanging'
+    
+    for(var i=0; i<allTasks.length; i++){
+        //   nodesArr - for WBS nodes
+        nodesArr.push(
+            {
+                id: allTasks[i]['_id'],
+                name: allTasks[i]['task_number'],
+                title: allTasks[i]['title'],
+                layout: 'hanging'
+            }
+        );
+
+        dataArr.push([allTasks[i]['parent_task_id'], allTasks[i]['_id']]);
+
+        // ganttArr - for gantt data
+        if (allTasks[i]['children'].length === 0){
+
+            if (allTasks[i]['parent_task_id'] !== "0"){
+                ganttDataArr.push(
+                    {
+                        id: allTasks[i]['_id'],
+                        name: allTasks[i]['title'],
+                        parent: allTasks[i]['parent_task_id'],
+                        start: Date.parse(allTasks[i]['expected_start_date']),
+                        end: Date.parse(allTasks[i]['expected_end_date']),
+                        owner: allTasks[i]['owners'],
+                        pointWidth: 3,
+                        y: i
+                    }
+                );
+    
+                ganttDataArr.push(
+                    {
+                        id: allTasks[i]['_id'],
+                        name: allTasks[i]['title'],
+                        parent: allTasks[i]['parent_task_id'],
+                        start: Date.parse(allTasks[i]['actual_start_date']) || 0,
+                        end: Date.parse(allTasks[i]['actual_end_date']) || 0,
+                        completed: {
+                            amount: allTasks[i]['completion'],
+                        },
+                        owner: allTasks[i]['owners'],
+                        y: i
+                    }
+                );
+            } else {
+                ganttDataArr.push(
+                    {
+                        id: allTasks[i]['_id'],
+                        name: allTasks[i]['title'],
+                        // parent: allTasks[i]['parent_task_id'],
+                        start: Date.parse(allTasks[i]['expected_start_date']),
+                        end: Date.parse(allTasks[i]['expected_end_date']),
+                        owner: allTasks[i]['owners'],
+                        y: i
+                    }
+                );
+    
+                ganttDataArr.push(
+                    {
+                        id: allTasks[i]['_id'],
+                        name: allTasks[i]['title'],
+                        // parent: allTasks[i]['parent_task_id'],
+                        start: Date.parse(allTasks[i]['actual_start_date']) || 0,
+                        end: Date.parse(allTasks[i]['actual_end_date']) || 0,
+                        completed: {
+                            amount: allTasks[i]['completion'],
+                        },
+                        owner: allTasks[i]['owners'],
+                        y: i
+                    }
+                );
+            }
+            
+        } else {
+            ganttDataArr.push(
+                {
+                    id: allTasks[i]['_id'],
+                    name: allTasks[i]['title'],
+                    // parent: allTasks[i]['parent_task_id'],
+                    // start: Date.parse(allTasks[i]['expected_start_date']),
+                    // end: Date.parse(allTasks[i]['expected_end_date']),
+                    owner: allTasks[i]['owners'],
+                    // pointWidth: 3,
+                    y: i
+                    
+                }
+            );
         }
-    );
-
-    dataArr.push([allTasks[i]['parent_task_id'], allTasks[i]['_id']]);
-    
-    if (allTasks[i]['parent_task_id'] === "0"){
-        ganttDataArr.push(
-            {
-                id: allTasks[i]['_id'],
-                name: allTasks[i]['title'],
-                // parent: allTasks[i]['parent_task_id'],
-                start: Date.parse(allTasks[i]['start_date']),
-                end: Date.parse(allTasks[i]['end_date']),
-                completed: {
-                    amount: allTasks[i]['completion'],
-                },
-                owner: allTasks[i]['owners'],
-                pointWidth: 3
-                
-            }
-        );
     }
-    else {
-        ganttDataArr.push(
-            {
-                id: allTasks[i]['_id'],
-                name: allTasks[i]['title'],
-                parent: allTasks[i]['parent_task_id'],
-                start: Date.parse(allTasks[i]['start_date']),
-                end: Date.parse(allTasks[i]['end_date']),
-                completed: {
-                    amount: allTasks[i]['completion'],
-                },
-                owner: allTasks[i]['owners'],
-                
-            }
-        );
-    }
-    
-  }
 
-// console.log(nodesArr);
-// console.log(dataArr);
-// console.log(ganttDataArr);
+console.log(nodesArr);
+console.log(dataArr);
+console.log(ganttDataArr);
   
 // WBS chart --------------------------------------------------------
   Highcharts.chart('wbs-container', {
@@ -69,7 +112,7 @@
     },
 
     title: {
-        text: 'Work Breakdown Structure'
+        text: projectTitle,
     },
 
     accessibility: {
@@ -82,46 +125,31 @@
 
     series: [{
         type: 'organization',
-        name: projectTitle,
+        name: 'Work Breakdown Structure',
         // height: 600,
         // width: 500,
         keys: ['from', 'to'],
         data: dataArr,
-        // [
-        //     ['Shareholders', 'Board'],
-        //     ['Board', 'CEO'],
-        //     ['CEO', 'CTO'],
-        //     ['CEO', 'CPO'],
-        //     ['CEO', 'CSO'],
-        //     ['CEO', 'HR'],
-        //     ['CTO', 'Product'],
-        //     ['CTO', 'Web'],
-        //     ['CSO', 'Sales'],
-        //     ['HR', 'Market'],
-        //     ['CSO', 'Market'],
-        //     ['HR', 'Market'],
-        //     ['CTO', 'Market']
-        // ],
         levels: [{
             level: 0,
-            color: 'silver',
+            color: '#093A3E',
             dataLabels: {
-                color: 'black'
+                color: 'white'
             },
             height: 25
         }, {
             level: 1,
-            color: 'silver',
-            dataLabels: {
-                color: 'black'
-            },
+            color: '#3AAFB9',
             height: 25
         }, {
             level: 2,
-            color: '#980104'
+            color: '#64E9EE'
+        }, {
+            level: 3,
+            color: '#97C8EB'
         }, {
             level: 4,
-            color: '#359154'
+            color: '#001011'
         }],
         nodes: nodesArr,
         colorByPoint: false,
