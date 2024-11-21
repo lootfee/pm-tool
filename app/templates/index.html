@@ -1,48 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="row mt-3">
+<div class="container my-5">
+    <div class="row mb-4">
         <div class="col-10">
-            <h3>Projects</h3>
+            <h3 class="fw-bold text-primary">Projects</h3>
         </div>
-        <div class="col-2 align-self-end">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
-                New Project
+        <div class="col-2 text-end">
+            <button title="New Project" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+                <i class="bi bi-folder-plus me-1"></i> New Project
             </button>
         </div>
     </div>
-    <div class="row">
-        <div class="col-4">
-            Title
-        </div>
-        <div class="col-4">
-            Description
-        </div>
-        <div class="col-2">
-            Start Date
-        </div>
-        <div class="col-2">
-            End Date
+
+    <!-- Header Row for Project Details -->
+    <div class="row fw-semibold text-muted border-bottom py-2">
+        <div class="col-2">Title</div>
+        <div class="col-5">Description</div>
+        <div class="col-2">Start Date</div>
+        <div class="col-2">End Date</div>
+        <div class="col-1 text-center">Action</div>
+    </div>
+
+    <!-- Project Items -->
+    {% for project in projects %}
+    <div class="row align-items-center">
+        <a href="{{ url_for('project', project_id=project['_id']) }}" class="text-decoration-none col-11">
+            <div class="row py-3 border-bottom project-item">
+                <div class="col-2 text-primary fw-medium">
+                    {{ project['title'] }}
+                </div>
+                <div class="col-5 text-secondary">
+                    {{ project['description'] }}
+                </div>
+                <div class="col-2 text-muted">
+                    {{ project['start_date'].date() }}
+                </div>
+                <div class="col-2 text-muted">
+                    {{ project['end_date'].date() }}
+                </div>
+            </div>
+        </a>
+        
+        <!-- Action Button with Popover -->
+        <div class="col-1 text-center py-2 border-bottom">
+            <button class="btn btn-outline-danger" type="button" data-bs-toggle="popover"
+                data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
+                aria-label="Opt out of project {{ project['title'] }}" 
+                title="Remove project? "
+                data-bs-content="<div class='mb-2'>Are you sure you want to remove project {{ project['title'] }}?</div>
+                                    <div><a class='btn btn-danger btn-sm' 
+                                        href='{{ url_for('remove_member', project_id=project['_id'], member_id=current_user.id) }}'>
+                                            <i class='bi bi-folder-x'></i> Remove
+                                        </a></div>">
+                <i class="bi bi-folder-x"></i>
+            </button>
         </div>
     </div>
-    {% for project in projects %}
-    <a href="{{ url_for('project', project_id=project['_id']) }}">
-        <div class="row">
-            <div class="col-4">
-                {{ project['title']}}
-            </div>
-            <div class="col-4">
-                {{ project['description']}}
-            </div>
-            <div class="col-2">
-                {{ project['start_date'].date() }}
-            </div>
-            <div class="col-2">
-                {{ project['end_date'].date() }}
-            </div>
-        </div>
-    </a>
     {% endfor %}
 </div>
 
@@ -216,109 +230,24 @@
                             {% endif %}
                         </div>
                     </div>
-                </div>
-            </div>
-    
-            <!-- <div class="mb-3">
-                <label for="endDateInput" class="form-label">Class Days</label>
-                <div class="row">
-                    <div class="col-3 align-self-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="mondayCheck" name="mondayCheck">
-                            <label class="form-check-label" for="mondayCheck">
-                                Monday
-                            </label>
-                        </div>
-                    </div>
                     <div class="col-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="" name="mondayHrs" aria-label="Monday hours" aria-describedby="monday-hrs">
-                            <span class="input-group-text" id="monday-hrs">hrs</span>
-                        </div>
-                    </div>
-                </div>                   
-                <div class="row">
-                    <div class="col-3 align-self-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="tuesdayCheck" name="tuesdayCheck">
-                            <label class="form-check-label" for="tuesdayCheck">
-                                Tuesday
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="" name="tuesdayHrs" aria-label="Tuesday hours" aria-describedby="tuesday-hrs">
-                            <span class="input-group-text" id="tuesday-hrs">hrs</span>
+                        <div class="mb-3">
+                            {{ form.sunday.label(class="form-label")}}
+                            <div class="input-group">
+                                {{ form.sunday(class="form-control", **{"aria-describedby": "sunday_addon"}) }}
+                                <span class="input-group-text" id="sunday_addon"> mins</span>
+                            </div>
+                            {% if form.sunday.errors %}
+                                <ul class="errors">
+                                {% for error in form.sunday.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-3 align-self-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="wednesdayCheck" name="wednesdayCheck">
-                            <label class="form-check-label" for="wednesdayCheck">
-                                Wednesday
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="" name="wednesdayHrs" aria-label="Wednesday hours" aria-describedby="wednesday-hrs">
-                            <span class="input-group-text" id="wednesday-hrs">hrs</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-3 align-self-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="thursdayCheck" name="thursdayCheck">
-                            <label class="form-check-label" for="thursdayCheck">
-                                Thursday
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="" name="thursdayHrs" aria-label="Thursday hours" aria-describedby="thursday-hrs">
-                            <span class="input-group-text" id="thursday-hrs">hrs</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-3 align-self-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="fridayCheck" name="fridayCheck">
-                            <label class="form-check-label" for="fridayCheck">
-                                Friday
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="" name="fridayHrs" aria-label="Friday hours" aria-describedby="friday-hrs">
-                            <span class="input-group-text" id="friday-hrs">hrs</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-3 align-self-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="saturdayCheck" name="saturdayCheck">
-                            <label class="form-check-label" for="saturdayCheck">
-                                Saturday
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="input-group">
-                            <input type="number" class="form-control" placeholder="" name="saturdayHrs" aria-label="Saturday hours" aria-describedby="saturday-hrs">
-                            <span class="input-group-text" id="saturday-hrs">hrs</span>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-          
+            </div>          
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -330,6 +259,11 @@
   </div>
 {% endblock %}
 
-{% block scripts %}
-
+{% block styles %}
+{{ super() }}
+<style>
+    .project-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
 {% endblock %}

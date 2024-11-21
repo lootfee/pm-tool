@@ -10,6 +10,7 @@ class User:
         self.id = id
         self.name = u["name"]
         self.email = u["email"]
+        self.profile_pic = u["profile_pic"]
 
     @staticmethod
     def is_authenticated():

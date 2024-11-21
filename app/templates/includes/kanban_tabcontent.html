@@ -1,0 +1,20 @@
+<div class="tab-pane fade {% if active_tab == 'nav-kanban-tab' %} show active {% endif %}" id="nav-kanban" role="tabpanel" aria-labelledby="nav-kanban-tab">
+    <h4 class="m-3 text-center">{{ project_title }} Kanban Board</h4>
+    <div class="kanban-board">
+      <div class="kanban-column" id="kb-to-do">
+          <h2>To Do</h2>
+      </div>
+      <div class="kanban-column" id="kb-delayed">
+          <h2>Delayed</h2>
+      </div>
+      <div class="kanban-column" id="kb-in-progress">
+          <h2>In Progress</h2>
+      </div>
+      <div class="kanban-column" id="kb-on-hold">
+          <h2>On Hold</h2>
+      </div>
+      <div class="kanban-column" id="kb-completed">
+          <h2>Completed</h2>
+      </div>
+  </div>
+</div>

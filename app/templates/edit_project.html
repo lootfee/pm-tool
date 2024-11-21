@@ -74,14 +74,14 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Class Times</label>
+                            <label class="form-label">Work Times</label>
                             <div class="row">
                                 <div class="col-4">
                                     <div class="mb-3">
                                         {{ form.monday.label(class="form-label")}}
                                         <div class="input-group">
                                         {{ form.monday(class="form-control", **{"aria-describedby": "monday_addon"}) }}
-                                        <span class="input-group-text" id="monday_addon"> mins</span>
+                                        <span class="input-group-text" id="monday_addon"> hrs</span>
                                         </div>
                                         {% if form.monday.errors %}
                                             <ul class="errors">
@@ -97,7 +97,7 @@
                                         {{ form.tuesday.label(class="form-label")}}
                                         <div class="input-group">
                                             {{ form.tuesday(class="form-control", **{"aria-describedby": "tuesday_addon"}) }}
-                                            <span class="input-group-text" id="tuesday_addon"> mins</span>
+                                            <span class="input-group-text" id="tuesday_addon"> hrs</span>
                                         </div>
                                         {% if form.tuesday.errors %}
                                             <ul class="errors">
@@ -113,7 +113,7 @@
                                         {{ form.wednesday.label(class="form-label")}}
                                         <div class="input-group">
                                             {{ form.wednesday(class="form-control", **{"aria-describedby": "wednesday_addon"}) }}
-                                            <span class="input-group-text" id="wednesday_addon"> mins</span>
+                                            <span class="input-group-text" id="wednesday_addon"> hrs</span>
                                             </div>
                                         {% if form.wednesday.errors %}
                                             <ul class="errors">
@@ -131,7 +131,7 @@
                                         {{ form.thursday.label(class="form-label")}}
                                         <div class="input-group">
                                             {{ form.thursday(class="form-control", **{"aria-describedby": "thursday_addon"}) }}
-                                            <span class="input-group-text" id="thursday_addon"> mins</span>
+                                            <span class="input-group-text" id="thursday_addon"> hrs</span>
                                             </div>
                                         {% if form.thursday.errors %}
                                             <ul class="errors">
@@ -147,7 +147,7 @@
                                         {{ form.friday.label(class="form-label")}}
                                         <div class="input-group">
                                             {{ form.friday(class="form-control", **{"aria-describedby": "friday_addon"}) }}
-                                            <span class="input-group-text" id="friday_addon"> mins</span>
+                                            <span class="input-group-text" id="friday_addon"> hrs</span>
                                             </div>
                                         {% if form.friday.errors %}
                                             <ul class="errors">
@@ -163,11 +163,27 @@
                                         {{ form.saturday.label(class="form-label")}}
                                         <div class="input-group">
                                             {{ form.saturday(class="form-control", **{"aria-describedby": "saturday_addon"}) }}
-                                            <span class="input-group-text" id="saturday_addon"> mins</span>
+                                            <span class="input-group-text" id="saturday_addon"> hrs</span>
                                             </div>
                                         {% if form.saturday.errors %}
                                             <ul class="errors">
                                             {% for error in form.saturday.errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="mb-3">
+                                        {{ form.sunday.label(class="form-label")}}
+                                        <div class="input-group">
+                                            {{ form.sunday(class="form-control", **{"aria-describedby": "sunday_addon"}) }}
+                                            <span class="input-group-text" id="sunday_addon"> hrs</span>
+                                            </div>
+                                        {% if form.sunday.errors %}
+                                            <ul class="errors">
+                                            {% for error in form.sunday.errors %}
                                                 <li>{{ error }}</li>
                                             {% endfor %}
                                             </ul>
@@ -194,8 +210,9 @@
                     <div class="warning">You have submitted an invalid CSRF token</div>
                 {% endif %}
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" name="email" aria-describedby="email_addon">
-                    <span class="input-group-text" id="email_addon">@saskpolytech.ca</span>
+                    <input type="text" class="form-control" name="email" placeholder="User email">
+                    <!-- <input type="text" class="form-control" name="email" aria-describedby="email_addon">
+                    <span class="input-group-text" id="email_addon">@saskpolytech.ca</span> -->
                     <button type="submit" class="btn btn-primary"> Add</button>
                 </div>
             </form>

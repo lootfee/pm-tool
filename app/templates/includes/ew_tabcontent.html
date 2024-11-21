@@ -1,0 +1,47 @@
+<div class="tab-pane fade {% if active_tab == 'nav-ew-tab' %} show active {% endif %}" id="nav-ew" role="tabpanel" aria-labelledby="nav-ew-tab">
+    <table class="table table-bordered">
+      <thead>
+        <th>Task</th>
+        <th>Action</th>
+        <th>Optimistic Duration</th>
+        <th>Expected Duration</th>
+        <th>Pessimistic Duration</th>
+        <th>Reserve Analysis</th>
+        <th>Comments</th>
+        <th colspan={{ project_members|length }}>Assigned to</th>
+      </thead>
+      <tbody>
+        {% for task in all_tasks %}
+        <tr>
+          <td>{{ task['task_number'] }} {{ task['title']}}</td>
+          <td>
+            <div class="button-container">
+              <button class='btn btn-info btn-sm editTaskBtn' title='Edit Task' id='ewEditBtn-{{loop.index0}}-{{task["_id"]}}' type='button'>
+                <i class='bi bi-pencil-square'></i>
+              </button>
+              <button class="btn btn-danger btn-sm deleteTaskBtn" title="Delete Task" id="kbDeleteBtn-{{loop.index0}}-{{task['_id']}}" type="button">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </td>
+          <td>{{ task['optimistic_duration'] }}</td>
+          <td>{{ task['expected_duration'] }}</td>
+          <td>{{ task['pessimistic_duration'] }}</td>
+          <td>{{ task['reserve_analysis'] }}</td>
+          <td>{{ task['comments'] }}</td>
+          {% for member in project_members %}
+              <td>
+                <div>
+                  <strong>{{ member[1] }}</strong>
+                </div>
+                <div>
+                  {{ member[0] }} 
+                </div>
+              </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div id="ew-container"></div>
+  </div>

@@ -68,7 +68,7 @@
 
 /* GANTT styles */
 #gantt-container {
-    max-width: 1000px;
+    width: auto;
     margin: 1em auto;
 }
 

@@ -1,0 +1,32 @@
+/* Kanban board styles */
+.kanban-board {
+    display: flex;
+    justify-content: space-around;
+}
+.kanban-column {
+    width: 18%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.kanban-task {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    background-color: #fff;
+}
+
+.task-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.button-container {
+    display: flex;
+    gap: 5px;
+}

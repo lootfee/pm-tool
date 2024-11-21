@@ -1,61 +1,52 @@
 {% extends "base.html" %}
 {% block styles %}
+{{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='hcharts.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='projectPage.css')}}">
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <h3>{{ project_title }}</h3>
+<div class="container-fluid">
+    
     <div class="mt-3">
       <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <button class="nav-link {% if active_tab == 'nav-kanban-tab' %} active {% endif %}" id="nav-kanban-tab" data-bs-toggle="tab" data-bs-target="#nav-kanban" type="button" role="tab" aria-controls="nav-home" aria-selected="true">KANBAN</button>
-            <button class="nav-link {% if active_tab == 'nav-wbs-tab' %} active {% endif %}" id="nav-wbs-tab" data-bs-toggle="tab" data-bs-target="#nav-wbs" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">WBS</button>
-            <button class="nav-link {% if active_tab == 'nav-ew-tab' %} active {% endif %}" id="nav-ew-tab" data-bs-toggle="tab" data-bs-target="#nav-ew" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Estimating WS</button>
-            <button class="nav-link {% if active_tab == 'nav-gantt-tab' %} active {% endif %}" id="nav-gantt-tab" data-bs-toggle="tab" data-bs-target="#nav-gantt" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">GANTT</button>
+            <button class="nav-link {% if active_tab == 'nav-kanban-tab' %} active {% endif %}" id="nav-kanban-tab" data-bs-toggle="tab" data-bs-target="#nav-kanban" type="button" role="tab" aria-controls="nav-kanban" aria-selected="true">KANBAN</button>
+            <button class="nav-link {% if active_tab == 'nav-wbs-tab' %} active {% endif %}" id="nav-wbs-tab" data-bs-toggle="tab" data-bs-target="#nav-wbs" type="button" role="tab" aria-controls="nav-wbs" aria-selected="false">WBS</button>
+            <!-- <button class="nav-link {% if active_tab == 'nav-ew-tab' %} active {% endif %}" id="nav-ew-tab" data-bs-toggle="tab" data-bs-target="#nav-ew" type="button" role="tab" aria-controls="nav-ew" aria-selected="false">Estimating WS</button> -->
+            <button class="nav-link {% if active_tab == 'nav-gantt-tab' %} active {% endif %}" id="nav-gantt-tab" data-bs-toggle="tab" data-bs-target="#nav-gantt" type="button" role="tab" aria-controls="nav-gantt" aria-selected="false">GANTT</button>
             <div class="ms-auto">
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">New Task</button>
-              <a class="btn btn-primary" href="{{url_for('edit_project', project_id=project_id)}}">Edit Project</a>    
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                <i class="bi bi-clipboard2-plus"></i>
+                New Task
+              </button>
+              <a class="btn btn-primary" href="{{url_for('edit_project', project_id=project_id)}}">
+                <i class="bi bi-folder2-open"></i>
+                Edit Project
+              </a>    
             </div>
                               
         </div>
       </nav>
     </div>
     <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade {% if active_tab == 'nav-kanban-tab' %} show active {% endif %}" id="nav-kanban" role="tabpanel" aria-labelledby="nav-kanban-tab">
-            {% for task in all_tasks %}
-            {% if task['children']|length == 0 %}
-            <div class="row">
-              <div class="col">
-                {{ task['task_number']}}-{{ task['title']}}-{{ task['start_date']}}-{{ task['end_date']}}
-              </div>
-            </div>
-            {% endif %}
-            {% endfor %}
-        </div>
-        <div class="tab-pane fade {% if active_tab == 'nav-wbs-tab' %} show active {% endif %}" id="nav-wbs" role="tabpanel" aria-labelledby="nav-wbs-tab">
-          <figure class="highcharts-figure">
-            <div id="wbs-container"></div>
-        </figure>
-        
-        </div>
-        <div class="tab-pane fade {% if active_tab == 'nav-ew-tab' %} show active {% endif %}" id="nav-ew" role="tabpanel" aria-labelledby="nav-ew-tab">ew</div>
-        <div class="tab-pane fade {% if active_tab == 'nav-gantt-tab' %} show active {% endif %}" id="nav-gantt" role="tabpanel" aria-labelledby="nav-gantt-tab">
-          <div id="gantt-container"></div>
-        </div>
+        {% include 'includes/kanban_tabcontent.html' %}
+        {% include 'includes/wbs_tabcontent.html' %}
+        <!-- {% include 'includes/ew_tabcontent.html' %} -->
+        {% include 'includes/gantt_tabcontent.html' %}
     </div>
 </div>
-<div class="container">
+<!-- <div class="container">
     
-</div>
+</div> -->
 
-<div class="modal fade" id="addTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addTaskLabel" aria-hidden="true">
+<div class="modal fade" id="addTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addTaskLabel">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form action="{{ url_for('project', project_id=project_id) }}" method="post" class="form needs-validation" id="addTaskForm" novalidate>
           {{ form.hidden_tag() }}
           <div class="modal-header">
-            <h4 class="modal-title" id="addTaskLabel">New Task</h4>
+            <h4 class="modal-title" id="addTaskModalLabel">New Task</h4>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -134,6 +125,71 @@
                   {% endif %}
                 </div>
               </div>
+              <div class="col-4">
+                <div class="mb-3">
+                  {{ form.optimistic_duration.label(class="form-label") }}
+                  {{ form.optimistic_duration(class="form-control") }}
+                  {% if form.optimistic_duration.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.optimistic_duration.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="mb-3">
+                  {{ form.expected_duration.label(class="form-label") }}
+                  {{ form.expected_duration(class="form-control") }}
+                  {% if form.expected_duration.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.expected_duration.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="mb-3">
+                  {{ form.pessimistic_duration.label(class="form-label") }}
+                  {{ form.pessimistic_duration(class="form-control") }}
+                  {% if form.pessimistic_duration.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.pessimistic_duration.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="mb-3">
+                  {{ form.reserve_analysis.label(class="form-label") }}
+                  {{ form.reserve_analysis(class="form-control") }}
+                  {% if form.reserve_analysis.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.reserve_analysis.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-8">
+                <div class="mb-3">
+                  {{ form.comments.label(class="form-label") }}
+                  {{ form.comments(class="form-control") }}
+                  {% if form.comments.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.comments.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
               <div class="col-6">
                 <div class="mb-3">
                   {{ form.expected_start_date.label(class="form-label") }}
@@ -145,11 +201,16 @@
                     {% endfor %}
                     </ul>
                   {% endif %}
+                    <!-- for invalid date picked / non-working day -->
+                    <div id="invalid-expected-start-date-picked" class="text-danger d-none">
+                        Please select a valid project working day!
+                    </div>
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
-                  {{ form.expected_end_date.label(class="form-label") }}
+                  {{ form.expected_end_date.label(class="form-label") }} 
+                  <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="Based on durations and reserve analysis. <br> ((OD + 4 * ED + PD) / 6) + RA"></i>
                   {{ form.expected_end_date(class="form-control") }}
                   {% if form.expected_end_date.errors %}
                     <ul class="errors invalid-feedback">
@@ -171,6 +232,10 @@
                     {% endfor %}
                     </ul>
                   {% endif %}
+                  <!-- for invalid date picked / non-working day -->
+                  <div id="invalid-actual-start-date-picked" class="text-danger d-none">
+                    Please select a valid project working day!
+                </div>
                 </div>
               </div>
               <div class="col-6">
@@ -229,8 +294,9 @@
 
 {% block scripts %}
 
-<script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script>
+<!-- <script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script> -->
 <script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/gantt/modules/gantt.js"></script>
 <script src="https://code.highcharts.com/modules/sankey.js"></script>
 
 <script src="https://code.highcharts.com/modules/organization.js"></script>
@@ -239,47 +305,15 @@
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
 <script>
+  // to be used in hcharts.js
   let allTasks = {{ all_tasks|safe }};
-  let projectTitle = "{{ title|safe }}";
+  let projectTitle = "{{ project_title|safe }}";
+  let projectStartDate = "{{ project_start_date|safe }}";
+  let projectEndDate = "{{ project_end_date|safe }}";
+  let validForm = "{{ valid_form|safe }}";
+  let workDays = {{ work_days|safe }};
+  let projectMembers = {{ project_members|safe }};
 </script>
 <script src="{{ url_for('static', filename='hcharts.js') }}"></script>
-<script>
-  var tabEl = document.querySelectorAll('button[data-bs-toggle="tab"]')
-  var form = document.getElementById('addTaskForm')
-  tabEl.forEach(el => {
-      el.addEventListener('click', function (event) {
-      var formUrl = form.action.split('?')[0]
-
-      form.action = formUrl + '?active_tab=' + event.target.id;
-      console.log(form.action)
-    })
-  });
-  var modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
-  {% if not valid_form %}
-    modal.show();
-  {% endif %}
-
-//   // Example starter JavaScript for disabling form submissions if there are invalid fields
-// (function () {
-//   'use strict'
-
-//   // Fetch all the forms we want to apply custom Bootstrap validation styles to
-//   var forms = document.querySelectorAll('.needs-validation')
-
-//   // Loop over them and prevent submission
-//   Array.prototype.slice.call(forms)
-//     .forEach(function (form) {
-//       form.addEventListener('submit', function (event) {
-//         if (!form.checkValidity()) {
-//           event.preventDefault()
-//           event.stopPropagation()
-//         }
-
-//         form.classList.add('was-validated')
-//       }, false)
-//     })
-// })()
-  
-
-</script>
+<script src="{{ url_for('static', filename='projectPage.js') }}"></script>
 {% endblock %}

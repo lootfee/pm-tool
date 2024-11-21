@@ -4,6 +4,7 @@ from config import Config
 from flask_login import LoginManager
 from pymongo import MongoClient
 from flask_bootstrap import Bootstrap5
+from msal import ConfidentialClientApplication
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -19,5 +20,10 @@ PROJECTS = db["projects"]
 TASKS = db["tasks"]
 USERS = db["users"]
 USER_PROJECTS = db["user_projects"]
+msal_app = ConfidentialClientApplication(
+    app.config["MICROSOFT_CLIENT_ID"],
+    authority=app.config["MICROSOFT_AUTHORITY"],
+    client_credential=app.config["MICROSOFT_CLIENT_SECRET"]
+)
 
 from app import routes
