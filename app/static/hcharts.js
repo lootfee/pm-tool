@@ -8,7 +8,13 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     let dataArr = [];
     let ganttDataArr = [];
-
+    let memberExpectedHours = {'total': 0}
+    let memberActualHours = {'total': 0}
+    projectMembers.forEach(member => {
+        memberExpectedHours[member] = 0;
+        memberActualHours[member] = 0;
+    });
+    console.log(memberExpectedHours)
     
     for(var i=0; i<allTasks.length; i++){
         //   nodesArr - for WBS nodes
@@ -21,13 +27,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         );
 
+        // for WBS data
         dataArr.push([allTasks[i]['parent_task_id'], allTasks[i]['_id']]);
+
+        console.log(allTasks[i]['title'])
+        // for calculating total and member hours
+        allTasks[i]['owner_names'].forEach(owner => {
+            memberExpectedHours[owner] += Number(allTasks[i]['total_expected_duration']) || 0;
+            memberActualHours[owner] += Number(allTasks[i]['total_actual_duration']) || 0;
+            memberExpectedHours['total'] += Number(allTasks[i]['total_expected_duration']) || 0;
+            memberActualHours['total'] += Number(allTasks[i]['total_actual_duration']) || 0;
+            console.log(memberExpectedHours['total'])
+        });
 
         // ganttArr - for gantt data
         if (allTasks[i]['children'].length === 0){
             if (allTasks[i]['parent_task_id'] !== "0"){
                 if (allTasks[i]['actual_start_date'] !== ''){
-                    console.log(1 + ' ' + allTasks[i]['title'])
+                    
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
@@ -40,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             completed: {
                                 amount: allTasks[i]['completion'] / 100,
                             },
-                            owner: allTasks[i]['owners'],
+                            owner: allTasks[i]['owner_names'],
                             owner_pics: allTasks[i]['owner_pics'].map(pic => 
                                 `<div style="width: 20px; height: 20px; overflow: hidden; border-radius: 50%; display: inline-block; margin-left: -10px;">
                                     <img src="${pic}" style="width: 30px; margin-left: -5px; margin-top: -2px;">
@@ -49,12 +66,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             optimistic_duration: allTasks[i]['optimistic_duration'],
                             expected_duration: allTasks[i]['expected_duration'],
                             pessimistic_duration: allTasks[i]['pessimistic_duration'],
+                            reserve_analysis: allTasks[i]['reserve_analysis'],
+                            final_estimate: allTasks[i]['total_expected_duration'],
                             y: i,
                         }
                     );
                 }
                 else {
-                    console.log(2 + ' ' + allTasks[i]['title'])
+                    
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
@@ -64,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             dependency: allTasks[i]['dependency'],
                             start: Date.parse(allTasks[i]['expected_start_date']),
                             end: Date.parse(allTasks[i]['expected_end_date']),
-                            owner: allTasks[i]['owners'],
+                            owner: allTasks[i]['owner_names'],
                             owner_pics: allTasks[i]['owner_pics'].map(pic => 
                                 `<div style="width: 20px; height: 20px; overflow: hidden; border-radius: 50%; display: inline-block; margin-left: -10px;">
                                     <img src="${pic}" style="width: 30px; margin-left: -5px; margin-top: -2px;">
@@ -73,13 +92,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             optimistic_duration: allTasks[i]['optimistic_duration'],
                             expected_duration: allTasks[i]['expected_duration'],
                             pessimistic_duration: allTasks[i]['pessimistic_duration'],
+                            reserve_analysis: allTasks[i]['reserve_analysis'],
+                            final_estimate: allTasks[i]['total_expected_duration'],
                             y: i,
                         }
                     );
                 }
             } else {
                 if (allTasks[i]['actual_start_date'] !== ''){
-                    console.log(3 + ' ' + allTasks[i]['title'])
+                    
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
@@ -91,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             completed: {
                                 amount: allTasks[i]['completion'] / 100,
                             },
-                            owner: allTasks[i]['owners'],
+                            owner: allTasks[i]['owner_names'],
                             owner_pics: allTasks[i]['owner_pics'].map(pic => 
                                 `<div style="width: 20px; height: 20px; overflow: hidden; border-radius: 50%; display: inline-block; margin-left: -10px;">
                                     <img src="${pic}" style="width: 30px; margin-left: -5px; margin-top: -2px;">
@@ -100,12 +121,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             optimistic_duration: allTasks[i]['optimistic_duration'],
                             expected_duration: allTasks[i]['expected_duration'],
                             pessimistic_duration: allTasks[i]['pessimistic_duration'],
+                            reserve_analysis: allTasks[i]['reserve_analysis'],
+                            final_estimate: allTasks[i]['total_expected_duration'],
                             y: i
                         }
                     );
                 }
                 else {
-                    console.log(4 + ' ' + allTasks[i]['title'])
+                    
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
@@ -114,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             // parent: allTasks[i]['parent_task_id'],
                             start: Date.parse(allTasks[i]['expected_start_date']),
                             end: Date.parse(allTasks[i]['expected_end_date']),
-                            owner: allTasks[i]['owners'],
+                            owner: allTasks[i]['owner_names'],
                             owner_pics: allTasks[i]['owner_pics'].map(pic => 
                                 `<div style="width: 20px; height: 20px; overflow: hidden; border-radius: 50%; display: inline-block; margin-left: -10px;">
                                     <img src="${pic}" style="width: 30px; margin-left: -5px; margin-top: -2px;">
@@ -123,6 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             optimistic_duration: allTasks[i]['optimistic_duration'],
                             expected_duration: allTasks[i]['expected_duration'],
                             pessimistic_duration: allTasks[i]['pessimistic_duration'],
+                            reserve_analysis: allTasks[i]['reserve_analysis'],
+                            final_estimate: allTasks[i]['total_expected_duration'],
                             y: i
                         }
                     );
@@ -143,11 +168,76 @@ document.addEventListener('DOMContentLoaded', function() {
                     optimistic_duration: allTasks[i]['optimistic_duration'],
                     expected_duration: allTasks[i]['expected_duration'],
                     pessimistic_duration: allTasks[i]['pessimistic_duration'],
+                    reserve_analysis: allTasks[i]['reserve_analysis'],
+                    final_estimate: allTasks[i]['total_expected_duration'],
                     y: i
                 }
             );
         }
     }
+
+    // Function to display member hours in the div 
+    // function displayMemberHours() { 
+    //     const totalsContainer = document.getElementById('totals-container'); 
+    //     //totalsContainer.innerHTML = ''; // Clear any existing content 
+    
+    //     projectMembers.forEach(member => {
+    //         const memberHours = document.createElement('div'); 
+    //         memberHours.textContent = `${member}: ${memberExpectedHours[member]} hours`; 
+    //         totalsContainer.appendChild(memberHours); 
+    //     });
+        
+    //     const totalHours = document.createElement('div'); 
+    //     totalHours.textContent = `total: ${projectTotalHours * projectMembers.length} hours`; 
+    //     totalsContainer.appendChild(totalHours);
+    // } 
+    function displayMemberHours() { 
+        const tbody = document.getElementById('totals-container'); 
+        tbody.innerHTML = ''; // Clear any existing content 
+        
+        projectMembers.forEach(member => { 
+            const row = document.createElement('tr'); 
+            const memberCell = document.createElement('td'); 
+            memberCell.textContent = member; 
+            const expectedHoursCell = document.createElement('td'); 
+            const actualHoursCell = document.createElement('td'); 
+            expectedHoursCell.textContent = `${memberExpectedHours[member]} hours`; 
+            actualHoursCell.textContent = `${memberActualHours[member]} hours`; 
+            row.appendChild(memberCell); 
+            row.appendChild(expectedHoursCell); 
+            row.appendChild(actualHoursCell); 
+            tbody.appendChild(row); 
+        });
+        
+        // Add current total hours row 
+        const currentTotalRow = document.createElement('tr'); 
+        const currentTotalLabelCell = document.createElement('td'); 
+        currentTotalLabelCell.textContent = 'Current Total'; 
+        const currentTotalExpectedHoursCell = document.createElement('td'); 
+        const currentTotalActualHoursCell = document.createElement('td'); 
+        currentTotalExpectedHoursCell.textContent = `${memberExpectedHours['total']} hours`; ; 
+        currentTotalActualHoursCell.textContent = `${memberActualHours['total']} hours`;;
+        currentTotalRow.appendChild(currentTotalLabelCell); 
+        currentTotalRow.appendChild(currentTotalExpectedHoursCell); 
+        currentTotalRow.appendChild(currentTotalActualHoursCell); 
+        tbody.appendChild(currentTotalRow); 
+        
+        // Add project total hours row 
+        const projectTotalRow = document.createElement('tr'); 
+        const projectTotalLabelCell = document.createElement('td'); 
+        projectTotalLabelCell.textContent = 'Project Total'; 
+        const projectTotalExpectedHoursCell = document.createElement('td'); 
+        const projectTotalActualHoursCell = document.createElement('td'); 
+        projectTotalExpectedHoursCell.textContent = `${projectTotalHours * projectMembers.length} hours`; 
+        projectTotalActualHoursCell.textContent = '';
+        projectTotalRow.appendChild(projectTotalLabelCell); 
+        projectTotalRow.appendChild(projectTotalExpectedHoursCell); 
+        projectTotalRow.appendChild(projectTotalActualHoursCell); 
+        tbody.appendChild(projectTotalRow); 
+    }
+    
+    // Call the function to display the member hours 
+    displayMemberHours();
 
     const colors = Highcharts.getOptions().colors;
     console.log('gant arr')
@@ -155,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // WBS chart --------------------------------------------------------
     Highcharts.chart('wbs-container', {
         chart: {
-            // height: 800,
+            height: 800,
             inverted: true
         },
 
@@ -494,6 +584,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     labels: {
                         format: '{point.reserve_analysis}'
+                    }
+                }, {
+                    title: {
+                        text: 'Final Estimate'
+                    },
+                    labels: {
+                        format: '{point.final_estimate}'
                     }
                 }]
             },

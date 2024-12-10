@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField, SelectMultipleField, DateField, HiddenField, FileField, FloatField
+from wtforms import StringField, TextAreaField, PasswordField, DecimalField, SubmitField, SelectField, IntegerField, SelectMultipleField, DateField, HiddenField, FileField, FloatField
 # from wtforms.fields import DateField
 from wtforms.widgets import CheckboxInput, ListWidget, TableWidget, RangeInput
 from wtforms.validators import DataRequired, Optional, NumberRange
@@ -41,20 +41,13 @@ class ProjectForm(FlaskForm):
     description = TextAreaField('Description')
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
-    monday = FloatField('Monday', validators=[Optional()])
-    tuesday = FloatField('Tuesday', validators=[Optional()])
-    wednesday = FloatField('Wednesday', validators=[Optional()])
-    thursday = FloatField('Thursday', validators=[Optional()])
-    friday = FloatField('Friday', validators=[Optional()])
-    saturday = FloatField('Saturday', validators=[Optional()])
-    sunday = FloatField('Sunday', validators=[Optional()])
-    # class_days = MultiCheckboxField('Class Days', coerce=str, choices=[('monday', 'Monday'), 
-    #                                                            ('tuesday', 'Tuesday'), 
-    #                                                            ('wednesday', 'Wednesday'),
-    #                                                            ('thursday', 'Thursday'), 
-    #                                                            ('friday', 'Friday'), 
-    #                                                            ('saturday', 'Saturday'),
-    #                                                            ('sunday', 'Sunday')])
+    monday = FloatField('Monday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
+    tuesday = FloatField('Tuesday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
+    wednesday = FloatField('Wednesday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
+    thursday = FloatField('Thursday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
+    friday = FloatField('Friday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
+    saturday = FloatField('Saturday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
+    sunday = FloatField('Sunday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
     submit = SubmitField('Save')
 
 
@@ -63,35 +56,20 @@ class TaskForm(FlaskForm):
     title = StringField('Task', validators=[DataRequired()])
     task_number = StringField('Task Number', validators=[DataRequired()])
     parent_task = SelectField('Parent Task', validators=[DataRequired()], coerce=str)
-    optimistic_duration = IntegerField('Optimistic Duration', validators=[NumberRange(min=1, max=100)], render_kw={'placeholder': 'Number of work hours'})
-    expected_duration = IntegerField('Expected Duration', validators=[NumberRange(min=1, max=100)], render_kw={'placeholder': 'Number of work hours'})
-    pessimistic_duration = IntegerField('Pessimistic Duration', validators=[NumberRange(min=1, max=100)], render_kw={'placeholder': 'Number of work hours'})
+    optimistic_duration = IntegerField('Optimistic Duration', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
+    expected_duration = IntegerField('Expected Duration', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
+    pessimistic_duration = IntegerField('Pessimistic Duration', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
     reserve_analysis = IntegerField('Reserve Analysis', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
     comments = TextAreaField('Comments', validators=[Optional()])
     expected_start_date = DateField('Expected Start Date', validators=[DataRequired()])
     expected_end_date = DateField('Estimated End Date', validators=[DataRequired()], render_kw={'readonly': True})
+    total_expected_duration = FloatField('Total expected Duration', validators=[Optional(), NumberRange(min=0, max=100)], default=0, render_kw={'readonly': True})
     actual_start_date = DateField('Actual Start Date', validators=[Optional()])
     actual_end_date = DateField('Actual End Date', validators=[Optional()])
+    total_actual_duration = FloatField('Total Actual Duration', validators=[Optional(), NumberRange(min=0, max=100)], default=0, render_kw={'readonly': True})
     hierarchy = IntegerField('Hierarchy', validators=[NumberRange(min=1, max=100)], default=1)
     completion = IntegerField('Completion', validators=[NumberRange(min=0, max=100)], default=0)
     dependency = SelectField('Dependency', coerce=str)
-    # owners = SelectMultipleField('Owners', validators=[DataRequired()], 
-    #                              option_widget=CheckboxInput(), widget=ListWidget(prefix_label=True))
     owners = MultiCheckboxField('Owners', coerce=str)
     submit = SubmitField('Save')
-
-    # def validate(self, extra_validators=None):                                                         
-
-    #     rv = FlaskForm.validate(self)                                           
-
-    #     if not rv:                                                              
-    #         return False                                                        
-
-    #     print(self.owners.data)                                                
-
-    #     if len(self.owners.data) < 1:                                          
-    #         self.owners.errors.append('Please select atleast 1 user')    
-    #         return False                                                        
-
-    #     return True 
     

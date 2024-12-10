@@ -7,7 +7,6 @@
 
 {% block content %}
 <div class="container-fluid">
-    
     <div class="mt-3">
       <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
@@ -32,13 +31,9 @@
     <div class="tab-content" id="nav-tabContent">
         {% include 'includes/kanban_tabcontent.html' %}
         {% include 'includes/wbs_tabcontent.html' %}
-        <!-- {% include 'includes/ew_tabcontent.html' %} -->
         {% include 'includes/gantt_tabcontent.html' %}
     </div>
 </div>
-<!-- <div class="container">
-    
-</div> -->
 
 <div class="modal fade" id="addTaskModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addTaskLabel">
     <div class="modal-dialog modal-lg">
@@ -190,7 +185,7 @@
                   {% endif %}
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-4">
                 <div class="mb-3">
                   {{ form.expected_start_date.label(class="form-label") }}
                   {{ form.expected_start_date(class="form-control") }}
@@ -207,7 +202,7 @@
                     </div>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-4">
                 <div class="mb-3">
                   {{ form.expected_end_date.label(class="form-label") }} 
                   <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="Based on durations and reserve analysis. <br> ((OD + 4 * ED + PD) / 6) + RA"></i>
@@ -221,7 +216,23 @@
                   {% endif %}
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-4">
+                <div class="mb-3">
+                  {{ form.total_expected_duration.label(class="form-label") }}
+                  <div class="input-group">                    
+                    {{ form.total_expected_duration(class="form-control decimal-2") }}
+                    <span class="input-group-text">work hrs</span>
+                  </div>
+                  {% if form.total_expected_duration.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.total_expected_duration.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-4">
                 <div class="mb-3">
                   {{ form.actual_start_date.label(class="form-label") }}
                   {{ form.actual_start_date(class="form-control") }}
@@ -238,13 +249,29 @@
                 </div>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-4">
                 <div class="mb-3">
                   {{ form.actual_end_date.label(class="form-label") }}
                   {{ form.actual_end_date(class="form-control") }}
                   {% if form.actual_end_date.errors %}
                     <ul class="errors invalid-feedback">
                     {% for error in form.actual_end_date.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="mb-3">
+                  {{ form.total_actual_duration.label(class="form-label") }}
+                  <div class="input-group">                    
+                    {{ form.total_actual_duration(class="form-control decimal-2") }}
+                    <span class="input-group-text">work hrs</span>
+                  </div>
+                  {% if form.total_actual_duration.errors %}
+                    <ul class="errors invalid-feedback">
+                    {% for error in form.total_actual_duration.errors %}
                         <li>{{ error }}</li>
                     {% endfor %}
                     </ul>
@@ -313,6 +340,7 @@
   let validForm = "{{ valid_form|safe }}";
   let workDays = {{ work_days|safe }};
   let projectMembers = {{ project_members|safe }};
+  let projectTotalHours = {{ project_total_hours|safe }};
 </script>
 <script src="{{ url_for('static', filename='hcharts.js') }}"></script>
 <script src="{{ url_for('static', filename='projectPage.js') }}"></script>

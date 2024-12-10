@@ -12,6 +12,8 @@
             name="viewport"
             content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
+        <meta name="description" content="Project management tool for tracking tasks and projects.">
+        <meta name="keywords" content="project management, task tracking, PM Tool">
 
         <!-- Bootstrap CSS v5.2.1 -->
         <link
@@ -83,9 +85,9 @@
             {% endwith %}
             {% block content %}{% endblock %}
         </main>
-        <footer>
-            <!-- place footer here -->
-        </footer>
+        <!-- footer class="bg-light text-center py-3">
+            <p>&copy; {{ current_year }} PM Tool. All Rights Reserved.</p>
+        </!-->
         <!-- Bootstrap JavaScript Libraries -->
         <script
             src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
@@ -99,7 +101,7 @@
             crossorigin="anonymous"
         ></script>
         <script type="text/javascript">
-            // Example starter JavaScript for disabling form submissions if there are invalid fields
+            // for disabling form submissions if there are invalid fields
             (function () {
             'use strict'
         
@@ -131,11 +133,21 @@
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
+
+            //used in index and edit project page
+            // Function to set input value to 2 decimal points 
+            function setTwoNumberDecimal(event) { 
+                console.log(this.value)
+                this.value = parseFloat(this.value).toFixed(2); 
+            } 
+            
+            // Loop through every element with the class 'decimal-2' and add the onchange event listener 
+            document.querySelectorAll('.decimal-2').forEach(element => { 
+                element.addEventListener('change', setTwoNumberDecimal); 
+            });
         </script>
 
         {% block scripts %}
-        
-        
         
         {% endblock %}
     </body>

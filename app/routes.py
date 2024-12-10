@@ -48,7 +48,8 @@ def index():
             day_of_week = current_date.weekday()
             for day, hours in work_days.items():
                 if day_mapping[day] == day_of_week:
-                    total_hours += hours
+                    if hours is not None:
+                        total_hours += hours
                     break
             current_date += timedelta(days=1)
             
@@ -83,13 +84,14 @@ def project(project_id):
     for member in project['members']:
         m = USERS.find_one(ObjectId(member))
         project_members.append((str(m['_id']), m['name']))
-
+    
     form = TaskForm()
     form.parent_task.choices = [("0", "None")]
     form.owners.choices = project_members
     form.dependency.choices = [("0", "None")]
     
     all_tasks = []
+    pprint(_sorted_tasks)
     for task in sorted_tasks:
         def format_date(date):
             try:
@@ -103,8 +105,9 @@ def project(project_id):
         actual_end_date = format_date(task.get('actual_end_date'))
         
         owner_pics = []
+        owner_names = []
         for owner_id in task['owners']:
-            print(get_user(owner_id))
+            owner_names.append(get_user(owner_id)['name'])
             try:
                 owner_pics.append(url_for('static', filename='profile_pics/' + get_user(owner_id)['profile_pic']))
             except KeyError:
@@ -114,18 +117,20 @@ def project(project_id):
         except KeyError:
             children = []
         all_tasks.append({'_id': str(task['_id']), 'project_id': task['project_id'], "task_number": task['task_number'], "title": task['title'], 
-                                    "expected_start_date": expected_start_date, "expected_end_date": expected_end_date, 
-                                    "actual_start_date": actual_start_date, "actual_end_date": actual_end_date,
-                                    "optimistic_duration": task.get('optimistic_duration', ''), "expected_duration": task.get('expected_duration', ''), 
-                                    "pessimistic_duration": task.get('pessimistic_duration', ''), "reserve_analysis": task.get('reserve_analysis', ''), 
-                                    "comments": task.get('comments', ''), "parent_task_id": task['parent_task_id'], "completion": task['completion'], "hierarchy": task['hierarchy'],
-                                    "dependency": task['dependency'], "level": task['level'], "owners": task['owners'], "children": children, "owner_pics": owner_pics})
+                                    "expected_start_date": expected_start_date, "expected_end_date": expected_end_date, "actual_start_date": actual_start_date, 
+                                    "actual_end_date": actual_end_date, "optimistic_duration": task.get('optimistic_duration', ''), 
+                                    "expected_duration": task.get('expected_duration', ''), "pessimistic_duration": task.get('pessimistic_duration', ''), 
+                                    "reserve_analysis": task.get('reserve_analysis', ''), "total_expected_duration": task.get('total_expected_duration', ''), 
+                                    "total_actual_duration": task.get('total_actual_duration', ''), "comments": task.get('comments', ''), 
+                                    "parent_task_id": task['parent_task_id'], "completion": task['completion'], "hierarchy": task['hierarchy'],
+                                    "dependency": task['dependency'], "level": task['level'], "children": children, 
+                                    "owners": task['owners'], "owner_names": owner_names, "owner_pics": owner_pics})
         form.parent_task.choices.append((task['_id'], task['title']))
         form.dependency.choices.append((task['_id'], task['title']))
 
     # pprint(all_tasks)
     active_tab = request.args.get('active_tab', str)
-    valid_tabs = ["nav-kanban-tab", "nav-ew-tab", "nav-gantt-tab", "nav-wbs-tab"]
+    valid_tabs = ["nav-kanban-tab", "nav-gantt-tab", "nav-wbs-tab"]
     if not active_tab or active_tab not in valid_tabs:
         active_tab = "nav-kanban-tab"
     
@@ -133,15 +138,17 @@ def project(project_id):
     valid_form = True
     if request.method == 'POST':
         valid_form = form.validate()
-    
+    print(form.errors)
     if form.validate_on_submit():
         task_id = form.task_id.data
         task_number = form.task_number.data
         title = form.title.data
-        optimistic_duration = form.optimistic_duration.data
-        expected_duration = form.expected_duration.data
-        pessimistic_duration = form.pessimistic_duration.data
-        reserve_analysis = form.reserve_analysis.data
+        optimistic_duration = float(form.optimistic_duration.data)  # parse to float since mongodb can only accept decimal128 type
+        expected_duration = float(form.expected_duration.data)
+        pessimistic_duration = float(form.pessimistic_duration.data)
+        reserve_analysis = float(form.reserve_analysis.data)
+        total_expected_duration = float(form.total_expected_duration.data)
+        total_actual_duration = float(form.total_actual_duration.data)
         comments = form.comments.data
         expected_start_date = ""
         expected_end_date = ""
@@ -161,7 +168,7 @@ def project(project_id):
         completion = form.completion.data
         dependency = form.dependency.data
         owners = form.owners.data
-    
+        
         # levels are used in WBS
         try:
             parent_task = TASKS.find_one({"_id": ObjectId(request.form.get('parent_task'))})
@@ -187,10 +194,11 @@ def project(project_id):
                                     "actual_start_date": actual_start_date, "actual_end_date": actual_end_date,
                                     "parent_task_id": parent_task_id, "optimistic_duration": optimistic_duration,
                                     "expected_duration": expected_duration, "pessimistic_duration": pessimistic_duration,
-                                    "reserve_analysis": reserve_analysis, "comments": comments,
+                                    "reserve_analysis": reserve_analysis, "total_expected_duration": total_expected_duration, 
+                                    "total_actual_duration": total_actual_duration, "comments": comments,
                                     "level": level,"hierarchy": hierarchy, "completion": completion, 
                                     "dependency": dependency, "owners": owners}}, upsert=True)
-                print(upd_task)
+            
                 if parent_task_id != "0": 
                     TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': task_id}}, upsert=True)
             except InvalidId:
@@ -201,7 +209,8 @@ def project(project_id):
                                         "actual_start_date": actual_start_date, "actual_end_date": actual_end_date,
                                         "parent_task_id": parent_task_id, "optimistic_duration": optimistic_duration,
                                         "expected_duration": expected_duration, "pessimistic_duration": pessimistic_duration,
-                                        "reserve_analysis": reserve_analysis, "comments": comments,
+                                        "reserve_analysis": reserve_analysis, "total_expected_duration": total_expected_duration, 
+                                        "total_actual_duration": total_actual_duration, "comments": comments,
                                         "level": level,"hierarchy": hierarchy, "completion": completion, 
                                         "dependency": dependency, "owners": owners, "children": []})
         
@@ -214,11 +223,12 @@ def project(project_id):
         # if active_tab:
         #     next_page += f'?active_tab={active_tab}'
         # print(next_page)
+        
         return redirect(request.referrer)
     return render_template('project_page.html', title='PM Tool', project_id=project_id, project_title=project['title'], 
                            project_start_date=project["start_date"], project_end_date=project["end_date"], form=form, 
                            all_tasks=all_tasks, active_tab=active_tab, valid_form=valid_form, work_days=project['work_days'],
-                           project_members=project_members)
+                           project_members=project_members, project_total_hours=project["total_hours"])
 
 
 
@@ -229,7 +239,7 @@ def edit_project(project_id):
     add_member_form = AddMemberForm()
     form = ProjectForm()
     edit_project = PROJECTS.find_one({'_id': ObjectId(project_id)})
-    pprint(edit_project)
+    
     project_members = []
     for member in edit_project['members']:
         m = USERS.find_one(ObjectId(member))
@@ -364,7 +374,7 @@ def auth_callback():
         )
         
         if "access_token" in result:
-            print(result)
+            
             # Extract user information from the token
             user_id = result.get("id_token_claims").get("oid")
             user_name = result.get("id_token_claims").get("name")

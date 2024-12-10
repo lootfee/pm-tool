@@ -3,8 +3,14 @@
 {% block content %}
 <div class="container">
     <div class="row mt-3">
-        <div class="col-12">
+        <div class="col-11">
             <h3>Edit Project {{ project_title }}</h3>
+        </div>
+        <div class="col-1">
+            <a href="{{ url_for('project', project_id=project_id) }}" class="btn btn-primary">
+                <i class="bi bi-clipboard-check"></i>
+                Tasks
+            </a>
         </div>
     </div>
     <div class="row mt-2">
@@ -80,13 +86,13 @@
                                     <div class="mb-3">
                                         {{ form.monday.label(class="form-label")}}
                                         <div class="input-group">
-                                        {{ form.monday(class="form-control", **{"aria-describedby": "monday_addon"}) }}
+                                        {{ form.monday(class="form-control decimal-2", **{"aria-describedby": "monday_addon"}) }}
                                         <span class="input-group-text" id="monday_addon"> hrs</span>
                                         </div>
                                         {% if form.monday.errors %}
                                             <ul class="errors">
                                             {% for error in form.monday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}
@@ -96,13 +102,13 @@
                                     <div class="mb-3">
                                         {{ form.tuesday.label(class="form-label")}}
                                         <div class="input-group">
-                                            {{ form.tuesday(class="form-control", **{"aria-describedby": "tuesday_addon"}) }}
+                                            {{ form.tuesday(class="form-control decimal-2", **{"aria-describedby": "tuesday_addon"}) }}
                                             <span class="input-group-text" id="tuesday_addon"> hrs</span>
                                         </div>
                                         {% if form.tuesday.errors %}
                                             <ul class="errors">
                                             {% for error in form.tuesday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}
@@ -112,13 +118,13 @@
                                     <div class="mb-3">
                                         {{ form.wednesday.label(class="form-label")}}
                                         <div class="input-group">
-                                            {{ form.wednesday(class="form-control", **{"aria-describedby": "wednesday_addon"}) }}
+                                            {{ form.wednesday(class="form-control decimal-2", **{"aria-describedby": "wednesday_addon"}) }}
                                             <span class="input-group-text" id="wednesday_addon"> hrs</span>
                                             </div>
                                         {% if form.wednesday.errors %}
                                             <ul class="errors">
                                             {% for error in form.wednesday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}
@@ -130,13 +136,13 @@
                                     <div class="mb-3">
                                         {{ form.thursday.label(class="form-label")}}
                                         <div class="input-group">
-                                            {{ form.thursday(class="form-control", **{"aria-describedby": "thursday_addon"}) }}
+                                            {{ form.thursday(class="form-control decimal-2", **{"aria-describedby": "thursday_addon"}) }}
                                             <span class="input-group-text" id="thursday_addon"> hrs</span>
                                             </div>
                                         {% if form.thursday.errors %}
                                             <ul class="errors">
                                             {% for error in form.thursday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}
@@ -146,13 +152,13 @@
                                     <div class="mb-3">
                                         {{ form.friday.label(class="form-label")}}
                                         <div class="input-group">
-                                            {{ form.friday(class="form-control", **{"aria-describedby": "friday_addon"}) }}
+                                            {{ form.friday(class="form-control decimal-2", **{"aria-describedby": "friday_addon"}) }}
                                             <span class="input-group-text" id="friday_addon"> hrs</span>
                                             </div>
                                         {% if form.friday.errors %}
                                             <ul class="errors">
                                             {% for error in form.friday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}
@@ -162,13 +168,13 @@
                                     <div class="mb-3">
                                         {{ form.saturday.label(class="form-label")}}
                                         <div class="input-group">
-                                            {{ form.saturday(class="form-control", **{"aria-describedby": "saturday_addon"}) }}
+                                            {{ form.saturday(class="form-control decimal-2", **{"aria-describedby": "saturday_addon"}) }}
                                             <span class="input-group-text" id="saturday_addon"> hrs</span>
                                             </div>
                                         {% if form.saturday.errors %}
                                             <ul class="errors">
                                             {% for error in form.saturday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}
@@ -178,13 +184,13 @@
                                     <div class="mb-3">
                                         {{ form.sunday.label(class="form-label")}}
                                         <div class="input-group">
-                                            {{ form.sunday(class="form-control", **{"aria-describedby": "sunday_addon"}) }}
+                                            {{ form.sunday(class="form-control decimal-2", **{"aria-describedby": "sunday_addon"}) }}
                                             <span class="input-group-text" id="sunday_addon"> hrs</span>
                                             </div>
                                         {% if form.sunday.errors %}
                                             <ul class="errors">
                                             {% for error in form.sunday.errors %}
-                                                <li>{{ error }}</li>
+                                                <li class="text-danger">{{ error }}</li>
                                             {% endfor %}
                                             </ul>
                                         {% endif %}

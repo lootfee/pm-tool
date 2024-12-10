@@ -1,4 +1,13 @@
 <div class="tab-pane fade {% if active_tab == 'nav-gantt-tab' %} show active {% endif %}" id="nav-gantt" role="tabpanel" aria-labelledby="nav-gantt-tab">
     <div id="gantt-container"></div>
-    <div id="totals-container"></div>
+    <div class="col-8 offset-2 mb-4">
+      <table class="table table-bordered table-striped text-center">
+        <thead>
+          <th>Member</th>
+          <th>Expected Hours</th>
+          <th>Actual Hours</th>
+        </thead>
+        <tbody id="totals-container"></tbody>
+      </table>
+    </div>
   </div>

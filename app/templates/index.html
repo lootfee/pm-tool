@@ -130,14 +130,14 @@
                 </div>
             </div>
             <div class="mb-3">
-                <label class="form-label">Class Times</label>
+                <label class="form-label">Work Times</label>
                 <div class="row">
                     <div class="col-4">
                         <div class="mb-3">
                             {{ form.monday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.monday(class="form-control", **{"aria-describedby": "monday_addon"}) }}
-                                <span class="input-group-text" id="monday_addon"> mins</span>
+                                {{ form.monday(class="form-control decimal-2", **{"aria-describedby": "monday_addon"}) }}
+                                <span class="input-group-text" id="monday_addon"> hrs</span>
                             </div>
                             {% if form.monday.errors %}
                                 <ul class="errors">
@@ -152,8 +152,8 @@
                         <div class="mb-3">
                             {{ form.tuesday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.tuesday(class="form-control", **{"aria-describedby": "tuesday_addon"}) }}
-                                <span class="input-group-text" id="tuesday_addon"> mins</span>
+                                {{ form.tuesday(class="form-control decimal-2", **{"aria-describedby": "tuesday_addon"}) }}
+                                <span class="input-group-text" id="tuesday_addon"> hrs</span>
                             </div>
                             {% if form.tuesday.errors %}
                                 <ul class="errors">
@@ -168,8 +168,8 @@
                         <div class="mb-3">
                             {{ form.wednesday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.wednesday(class="form-control", **{"aria-describedby": "wednesday_addon"}) }}
-                                <span class="input-group-text" id="wednesday_addon"> mins</span>
+                                {{ form.wednesday(class="form-control decimal-2", **{"aria-describedby": "wednesday_addon"}) }}
+                                <span class="input-group-text" id="wednesday_addon"> hrs</span>
                             </div>
                             {% if form.wednesday.errors %}
                                 <ul class="errors">
@@ -186,8 +186,8 @@
                         <div class="mb-3">
                             {{ form.thursday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.thursday(class="form-control", **{"aria-describedby": "thursday_addon"}) }}
-                                <span class="input-group-text" id="thursday_addon"> mins</span>
+                                {{ form.thursday(class="form-control decimal-2", **{"aria-describedby": "thursday_addon"}) }}
+                                <span class="input-group-text" id="thursday_addon"> hrs</span>
                             </div>
                             {% if form.thursday.errors %}
                                 <ul class="errors">
@@ -202,8 +202,8 @@
                         <div class="mb-3">
                             {{ form.friday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.friday(class="form-control", **{"aria-describedby": "friday_addon"}) }}
-                                <span class="input-group-text" id="friday_addon"> mins</span>
+                                {{ form.friday(class="form-control decimal-2", **{"aria-describedby": "friday_addon"}) }}
+                                <span class="input-group-text" id="friday_addon"> hrs</span>
                             </div>
                             {% if form.friday.errors %}
                                 <ul class="errors">
@@ -218,8 +218,8 @@
                         <div class="mb-3">
                             {{ form.saturday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.saturday(class="form-control", **{"aria-describedby": "saturday_addon"}) }}
-                                <span class="input-group-text" id="saturday_addon"> mins</span>
+                                {{ form.saturday(class="form-control decimal-2", **{"aria-describedby": "saturday_addon"}) }}
+                                <span class="input-group-text" id="saturday_addon"> hrs</span>
                             </div>
                             {% if form.saturday.errors %}
                                 <ul class="errors">
@@ -234,8 +234,8 @@
                         <div class="mb-3">
                             {{ form.sunday.label(class="form-label")}}
                             <div class="input-group">
-                                {{ form.sunday(class="form-control", **{"aria-describedby": "sunday_addon"}) }}
-                                <span class="input-group-text" id="sunday_addon"> mins</span>
+                                {{ form.sunday(class="form-control decimal-2", **{"aria-describedby": "sunday_addon"}) }}
+                                <span class="input-group-text" id="sunday_addon"> hrs</span>
                             </div>
                             {% if form.sunday.errors %}
                                 <ul class="errors">

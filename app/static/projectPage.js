@@ -17,18 +17,24 @@ document.addEventListener('DOMContentLoaded', function() {
         comments: document.getElementById('comments'),
         expected_start_date: document.getElementById('expected_start_date'),
         expected_end_date: document.getElementById('expected_end_date'),
+        total_expected_duration: document.getElementById('total_expected_duration'),
         actual_start_date: document.getElementById('actual_start_date'),
         actual_end_date: document.getElementById('actual_end_date'),
+        total_actual_duration: document.getElementById('total_actual_duration'),
         completion: document.getElementById('completion'),
         dependency: document.getElementById('dependency'),
         parent_task_id: document.getElementById('parent_task'),
         owners: document.querySelectorAll('[name="owners"]')
     };
 
+    form.action = window.location.href;
+
     // Add active_tab arg when submitting forms and for refreshing pages
     tabEls.forEach(el => {
         el.addEventListener('click', function(event) {
+            console.log(event.target.id)
             const redirectUrl = `${form.action.split('?')[0]}?active_tab=${event.target.id}`;
+            form.action = redirectUrl;
             history.pushState(null, '', redirectUrl);
         });
     });
@@ -94,12 +100,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const reserve = parseInt(formElements.reserve_analysis.value) || 0;
 
         const averageDuration = (optimistic + 4 * expected + pessimistic) / 6;
-        const totalDuration = averageDuration + reserve;
+        const totalExpectedDuration = averageDuration + reserve;
 
         let startDate = formElements.actual_start_date.value || formElements.expected_start_date.value;
         if (startDate) {
             startDate = new Date(startDate);
-            let hrsToAdd = totalDuration
+            let hrsToAdd = totalExpectedDuration
             let endDate = new Date(startDate);
 
             // Loop to add only working days
@@ -116,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             formElements.expected_end_date.value = endDate.toISOString().split('T')[0];
+            formElements.total_expected_duration.value = parseFloat(totalExpectedDuration).toFixed(2);
         }
     }
 

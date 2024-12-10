@@ -13,10 +13,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="emailInput" class="form-label">Email</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="emailInput" name="email" aria-label="Name" aria-describedby="email-addon2">
-                        <span class="input-group-text" id="email-addon2">@saskpolytech.ca</span>
-                    </div>
+                    <input type="text" class="form-control" id="emailInput" name="email" aria-label="Name" aria-describedby="email-addon2">
                     {% for error in form.email.errors %}
                     <span style="color: red;">[{{ error }}]</span>
                     {% endfor %}
