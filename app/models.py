@@ -2,15 +2,27 @@ from app import login, db, USERS
 from flask_login import UserMixin
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
+from pymongo.errors import PyMongoError
+import logging
 
+logger = logging.getLogger("pm-tool")
 
 class User:
     def __init__(self, id):
-        u = USERS.find_one({"_id": ObjectId(id)})
-        self.id = id
-        self.name = u["name"]
-        self.email = u["email"]
-        self.profile_pic = u["profile_pic"]
+        try:
+            u = USERS.find_one({"_id": ObjectId(id)})
+            if not u:
+                raise ValueError("User not found")
+            self.id = id
+            self.name = u["name"]
+            self.email = u["email"]
+            self.profile_pic = u.get("profile_pic", None)
+        except PyMongoError as e:
+            logger.error(f"Database error: {e}")
+            raise RuntimeError(f"Database error: {e}")
+        except Exception as e:
+            logger.error(f"Error initializing user: {e}")
+            raise ValueError(f"Error loading user: {e}")
 
     @staticmethod
     def is_authenticated():
@@ -34,11 +46,28 @@ class User:
     @staticmethod
     def check_password(password_hash, password):
         return check_password_hash(password_hash, password)
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "profile_pic": self.profile_pic
+        }
+        
+    @staticmethod
+    def find_by_email(email):
+        return USERS.find_one({"email": email})
 
 
     @login.user_loader
     def load_user(id):
-        u = USERS.find_one({"_id": ObjectId(id)})
-        if not u:
+        try:
+            u = USERS.find_one({"_id": ObjectId(id)})
+            if not u:
+                logger.warning(f"User not found: {id}")
+                return None
+            return User(id=str(u['_id']))
+        except Exception as e:
+            logger.error(f"Error loading user: {e}")
             return None
-        return User(id=str(u['_id']))

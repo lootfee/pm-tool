@@ -2,32 +2,41 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, PasswordField, DecimalField, SubmitField, SelectField, IntegerField, SelectMultipleField, DateField, HiddenField, FileField, FloatField
 # from wtforms.fields import DateField
 from wtforms.widgets import CheckboxInput, ListWidget, TableWidget, RangeInput
-from wtforms.validators import DataRequired, Optional, NumberRange
+from wtforms.validators import DataRequired, Optional, NumberRange, Length, EqualTo, Regexp, Email
+from flask_wtf.file import FileAllowed
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
 
 class RegisterForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    password2 = PasswordField('Validate Password', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email(message="Must be a valid email address.")])
+    password = PasswordField('Password', validators=[
+                                            DataRequired(), 
+                                            Length(min=8, message="Password must be at least 8 characters long."), 
+                                            Regexp(
+                                                regex="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])",
+                                                message="Password must include an uppercase letter, a number, and a special character."
+                                            )
+                                        ]
+                            )
+    password2 = PasswordField('Validate Password', validators=[DataRequired(), EqualTo('password', message="Passwords must match.")])
     submit = SubmitField('Register')
     
 
 class UpdateUserForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
-    profile_pic = FileField('Profile Picture', validators=[Optional()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    profile_pic = FileField('Profile Picture', validators=[Optional(), FileAllowed(['jpg', 'png'], "Only .jpg and .png files are allowed.")])
     submit = SubmitField('Register')
 
 
 class AddMemberForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Add')
 
 class MultiCheckboxField(SelectMultipleField):

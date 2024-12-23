@@ -31,14 +31,14 @@
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-repository-url/pm-tool.git
+git clone https://github.com/lootfee/pm-tool.git
 cd pm-tool
 ```
 
 2. Create and activate a virtual environment:
 ```bash
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: cd venv\Scripts then run activate.bat
 ```
 
 3. Install dependencies:
@@ -53,10 +53,22 @@ DB_USERNAME=db_username
 DB_PASSWORD=db_password
 MICROSOFT_CLIENT_ID=your_msal_client_id
 MICROSOFT_CLIENT_SECRET=your_msal_client_secret
-TENENAT_ID=
+TENANT_ID=
 ```
 
-5. Run the application:
+5. Setup the database
+* Create user and connection in MongoDB Compass
+    - https://www.geeksforgeeks.org/how-to-set-username-and-password-in-mongodb-compass/
+    - database name is "pm-tool"
+
+* Create the following database collections
+     - projects
+     - tasks
+     - user_projects
+     - users
+
+
+6. Run the application:
 ```bash
 flask run
 ```

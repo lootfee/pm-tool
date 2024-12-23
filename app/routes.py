@@ -335,12 +335,10 @@ def register():
     if form.validate_on_submit():
         user = USERS.find_one({"email": form.email.data})
         if not user:
-            user_name = form.name.data.split(',').reverse()
-            if user_name.length() == 1:
-                user_name = form.name.data.split(' ')
+            user_name = form.name.data.split(' ')
             filename = uuid4().hex + '.png'
             profile_pic = create_profile_pic(user_name[0], user_name[-1])
-            file_path = os.path.join(basedir, app.config['PROFILE_PICS_PATH'], filename)
+            file_path = os.path.join(app.config['PROFILE_PICS_PATH'], filename)
             profile_pic.save(file_path)
             USERS.insert_one({"name": form.name.data, "email": form.email.data, 
                               "password": User.set_password(form.password.data), "profile_pic": filename})
@@ -348,6 +346,10 @@ def register():
         else:
             flash('Email has already been registered', 'alert-warning')
         return redirect(url_for('login'))
+    elif form.errors:
+        pprint(form.errors)
+        form.name.data = form.name.data
+        form.email.data = form.email.data
     return render_template('register.html', title='Register', form=form)
 
 
