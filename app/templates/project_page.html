@@ -3,6 +3,11 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='hcharts.css')}}">
 <link rel="stylesheet" href="{{ url_for('static', filename='projectPage.css')}}">
+<style type="text/css">
+.text-danger {
+	font-size : smaller;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -50,152 +55,99 @@
                 <div class="mb-3">
                   {{ form.title.label(class="form-label") }}
                   {{ form.title(class="form-control") }}
-                  <div class="invalid-feedback fe-validation">
-                    Required!
-                  </div>
-                  {% if form.title.errors %}
-                      <ul class="errors invalid-feedback">
-                      {% for error in form.title.errors %}
-                          <li>{{ error }}</li>
-                      {% endfor %}
-                      </ul>
-                  {% endif %}
+                  {% for error in form.title.errors %}
+                      <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
                   {{ form.parent_task.label(class="form-label")}}
                   {{ form.parent_task(class="form-select") }}
-                  {% if form.parent_task.errors %}
-                      <ul class="errors invalid-feedback">
-                      {% for error in form.parent_task.errors %}
-                          <li>{{ error }}</li>
-                      {% endfor %}
-                      </ul>
-                  {% endif %}
+                  {% for error in form.parent_task.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
                   {{ form.dependency.label(class="form-label") }}
                   {{ form.dependency(class="form-select") }}
-                  {% if form.dependency.errors %}
-                      <ul class="errors invalid-feedback">
-                      {% for error in form.dependency.errors %}
-                          <li>{{ error }}</li>
-                      {% endfor %}
-                      </ul>
-                  {% endif %}
+                  {% for error in form.dependency.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div> 
               </div>
               <div class="col-6">
                 <div class="mb-3">
                   {{ form.task_number.label(class="form-label") }}
                   {{ form.task_number(class="form-control") }}
-                  <div class="invalid-feedback fe-validation">
-                    Required!
-                  </div>
-                  {% if form.task_number.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.task_number.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.task_number.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
                   {{ form.hierarchy.label(class="form-label") }}
                   {{ form.hierarchy(class="form-control") }}
-                  <div class="invalid-feedback fe-validation">
-                    Should be between 1 - 100
-                  </div>
-                  {% if form.hierarchy.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.hierarchy.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.hierarchy.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
                   {{ form.optimistic_duration.label(class="form-label") }}
                   {{ form.optimistic_duration(class="form-control") }}
-                  {% if form.optimistic_duration.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.optimistic_duration.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.optimistic_duration.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
                   {{ form.expected_duration.label(class="form-label") }}
                   {{ form.expected_duration(class="form-control") }}
-                  {% if form.expected_duration.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.expected_duration.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.expected_duration.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
                   {{ form.pessimistic_duration.label(class="form-label") }}
                   {{ form.pessimistic_duration(class="form-control") }}
-                  {% if form.pessimistic_duration.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.pessimistic_duration.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.pessimistic_duration.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
                   {{ form.reserve_analysis.label(class="form-label") }}
                   {{ form.reserve_analysis(class="form-control") }}
-                  {% if form.reserve_analysis.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.reserve_analysis.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.reserve_analysis.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-8">
                 <div class="mb-3">
                   {{ form.comments.label(class="form-label") }}
                   {{ form.comments(class="form-control") }}
-                  {% if form.comments.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.comments.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.comments.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
                   {{ form.expected_start_date.label(class="form-label") }}
                   {{ form.expected_start_date(class="form-control") }}
-                  {% if form.expected_start_date.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.expected_start_date.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+                  {% for error in form.expected_start_date.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                  {% endfor %}
                     <!-- for invalid date picked / non-working day -->
                     <div id="invalid-expected-start-date-picked" class="text-danger d-none">
                         Please select a valid project working day!
@@ -204,45 +156,33 @@
               </div>
               <div class="col-4">
                 <div class="mb-3">
-                  {{ form.expected_end_date.label(class="form-label") }} 
-                  <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="Based on durations and reserve analysis. <br> ((OD + 4 * ED + PD) / 6) + RA"></i>
-                  {{ form.expected_end_date(class="form-control") }}
-                  {% if form.expected_end_date.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.expected_end_date.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+					{{ form.expected_end_date.label(class="form-label") }} 
+					<i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top" title="Based on durations and reserve analysis. <br> ((OD + 4 * ED + PD) / 6) + RA"></i>
+					{{ form.expected_end_date(class="form-control") }}
+					{% for error in form.expected_end_date.errors %}
+						<div class="text-danger">{{ error }}</div>
+					{% endfor %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
                   {{ form.total_expected_duration.label(class="form-label") }}
-                  <div class="input-group">                    
-                    {{ form.total_expected_duration(class="form-control decimal-2") }}
-                    <span class="input-group-text">work hrs</span>
-                  </div>
-                  {% if form.total_expected_duration.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.total_expected_duration.errors %}
-                        <li>{{ error }}</li>
+					<div class="input-group">                    
+						{{ form.total_expected_duration(class="form-control decimal-2") }}
+						<span class="input-group-text">work hrs</span>
+					</div>
+                  	{% for error in form.total_expected_duration.errors %}
+						<div class="text-danger">{{ error }}</div>
                     {% endfor %}
-                    </ul>
-                  {% endif %}
                 </div>
               </div>
               <div class="col-4">
                 <div class="mb-3">
-                  {{ form.actual_start_date.label(class="form-label") }}
-                  {{ form.actual_start_date(class="form-control") }}
-                  {% if form.actual_start_date.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.actual_start_date.errors %}
-                        <li>{{ error }}</li>
+					{{ form.actual_start_date.label(class="form-label") }}
+					{{ form.actual_start_date(class="form-control") }}
+                  	{% for error in form.actual_start_date.errors %}
+						<div class="text-danger">{{ error }}</div>
                     {% endfor %}
-                    </ul>
-                  {% endif %}
                   <!-- for invalid date picked / non-working day -->
                   <div id="invalid-actual-start-date-picked" class="text-danger d-none">
                     Please select a valid project working day!
@@ -251,15 +191,11 @@
               </div>
               <div class="col-4">
                 <div class="mb-3">
-                  {{ form.actual_end_date.label(class="form-label") }}
-                  {{ form.actual_end_date(class="form-control") }}
-                  {% if form.actual_end_date.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.actual_end_date.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+					{{ form.actual_end_date.label(class="form-label") }}
+					{{ form.actual_end_date(class="form-control") }}
+					{% for error in form.actual_end_date.errors %}
+						<div class="text-danger">{{ error }}</div>
+					{% endfor %}
                 </div>
               </div>
               <div class="col-4">
@@ -269,42 +205,27 @@
                     {{ form.total_actual_duration(class="form-control decimal-2") }}
                     <span class="input-group-text">work hrs</span>
                   </div>
-                  {% if form.total_actual_duration.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.total_actual_duration.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+				    {% for error in form.total_actual_duration.errors %}
+						<div class="text-danger">{{ error }}</div>
+					{% endfor %}
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
-                  {{ form.owners.label(class="form-label") }}
-                  {{ form.owners(class="form-check list-unstyled") }}
-                  {% if form.owners.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.owners.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+					{{ form.owners.label(class="form-label") }}
+					{{ form.owners(class="form-check list-unstyled") }}
+					{% for error in form.owners.errors %}
+						<div class="text-danger">{{ error }}</div>
+					{% endfor %}
                 </div>
               </div>
               <div class="col-6">
                 <div class="mb-3">
-                  {{ form.completion.label(class="form-label") }}
-                  {{ form.completion(class="form-control") }}
-                  <div class="invalid-feedback fe-validation">
-                    Should be between 0 - 100
-                  </div>
-                  {% if form.completion.errors %}
-                    <ul class="errors invalid-feedback">
-                    {% for error in form.completion.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                  {% endif %}
+					{{ form.completion.label(class="form-label") }}
+					{{ form.completion(class="form-control") }}
+					{% for error in form.completion.errors %}
+						<div class="text-danger">{{ error }}</div>
+					{% endfor %}
                 </div>
               </div>
             </div>
@@ -337,7 +258,7 @@
   let projectTitle = "{{ project_title|safe }}";
   let projectStartDate = "{{ project_start_date|safe }}";
   let projectEndDate = "{{ project_end_date|safe }}";
-  let validForm = "{{ valid_form|safe }}";
+  let validForm = ("{{ valid_form|safe }}" === "True"); // to display js boolean
   let workDays = {{ work_days|safe }};
   let projectMembers = {{ project_members|safe }};
   let projectTotalHours = {{ project_total_hours|safe }};

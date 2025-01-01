@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cache DOM Elements
     const form = document.getElementById('addTaskForm');
     const modalTitle = document.getElementById('addTaskModalLabel');
-    const editTaskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+    const editTaskModal = new bootstrap.Modal('#addTaskModal');
     const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
     const formElements = {
         _id: document.getElementById('task_id'),
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         owners: document.querySelectorAll('[name="owners"]')
     };
 
-    form.action = window.location.href;
+    form.action = window.location.href; // update form action to include current active_tab
 
     // Add active_tab arg when submitting forms and for refreshing pages
     tabEls.forEach(el => {

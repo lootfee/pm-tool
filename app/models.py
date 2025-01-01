@@ -1,4 +1,4 @@
-from app import login, db, USERS
+from app import login, db, USERS, PROJECTS
 from flask_login import UserMixin
 from bson import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -58,6 +58,16 @@ class User:
     @staticmethod
     def find_by_email(email):
         return USERS.find_one({"email": email})
+    
+    
+    def is_team_leader(self, project_id):
+        project = PROJECTS.find_one({"_id": ObjectId(project_id)})
+        if project:
+            team_leaders = project.get("team_leaders", [])
+            for leader in team_leaders:
+                if str(leader) == str(self.id):
+                    return True
+        return False
 
 
     @login.user_loader

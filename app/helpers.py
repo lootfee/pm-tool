@@ -1,4 +1,4 @@
-from app import TASKS, USER_PROJECTS
+from app import TASKS, PROJECTS, USERS, USER_PROJECTS
 from flask import flash, redirect, url_for
 from flask_login import current_user
 from bson import ObjectId
@@ -24,6 +24,33 @@ def user_project_required(f):
         flash("You don't have permission to access this project", "alert-warning")
         return redirect(url_for('index'))
     return wrapped
+
+
+# decorator to only allow access to team leaders of a project
+def project_team_leader_required(f):
+    @wraps(f)
+    def decorated_function(project_id, *args, **kwargs):
+        try:
+            # Ensure project_id is a valid ObjectId
+            project_id = ObjectId(project_id)
+        except Exception:
+            flash("Invalid project ID", "alert-danger")
+            return redirect(url_for("index"))
+        
+        # Fetch the project from the database
+        project = PROJECTS.find_one({"_id": project_id})
+        if not project:
+            flash("Project not found", "alert-danger")
+            return redirect(url_for("index"))
+        
+        # Check if the current user is a team leader for the project
+        if str(current_user.id) not in project.get("team_leaders", []):
+            flash("You are not registered as a team leader for this project", "alert-danger")
+            return redirect(url_for("index"))
+        
+        # Proceed to the wrapped function if the check passes
+        return f(project_id, *args, **kwargs)
+    return decorated_function
 
 
 # sort tasks by hierarchy and by parent
@@ -102,3 +129,107 @@ def create_profile_pic(first_name, last_name, size=128, bg_color=(47, 47, 47), t
 
     # Save or return the image
     return image
+
+
+def remove_team_member(user_id, project_id):
+    try:
+        project = PROJECTS.find_one({'_id': ObjectId(project_id)})
+        member = USERS.find_one({'_id': ObjectId(user_id)})
+            
+        if not member or not project:
+            flash("Invalid user or project.", "alert-danger")
+            return False
+
+        if user_id in project.get("team_leaders", []) and len(project.get("team_leaders", [])) <= 1:
+            flash("Cannot remove the only team leader.", "alert-warning")
+            return False
+
+        # Check if the user has assigned tasks
+        assigned_tasks = TASKS.count_documents({"project_id": project_id, "owners": {"$in": [user_id]}})
+        if assigned_tasks > 0:
+            flash(f"User {member['name']} has assigned tasks. Reassign tasks before removing.", "alert-warning")
+            return False
+        
+        USER_PROJECTS.update_one({'user_id':str(member['_id'])}, {'$pull': {'projects': str(project['_id'])}})
+        PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'members': str(member['_id'])}})
+        flash(f'User {member['name']} has been removed from the project', 'alert-info')
+        return True
+    
+    except Exception as e:
+        # Log the error and flash a message
+        flash(f"Invalid ID format: {e}", "alert-danger")
+        return False
+
+
+def assign_team_leader(user_id, project_id):
+    try:
+        # Ensure user_id and project_id are valid ObjectIds
+        obj_user_id = ObjectId(user_id)
+        obj_project_id = ObjectId(project_id)
+            
+        # Check if the user exists in the database
+        user = USERS.find_one({"_id": obj_user_id})
+        if not user:
+            flash("User not found", "alert-danger")
+            return False
+        
+        # Check if the project exists
+        project = PROJECTS.find_one({"_id": obj_project_id})
+        if not project:
+            flash("Project not found", "alert-danger")
+            return False
+        
+        # Check if the user is already assigned as a team leader
+        if "team_leaders" in project and user_id in project["team_leaders"]:
+            flash(f"{user['name']} is already a team leader for this project", "alert-warning")
+            return False
+        
+        # Add the user to the project's team leaders list
+        PROJECTS.update_one(
+            {"_id": obj_project_id},
+            {"$addToSet": {"team_leaders": user_id}}
+        )
+        flash("User successfully assigned as team leader", "alert-info")
+        return True
+    
+    except Exception as e:
+        # Log the error and flash a message
+        flash(f"Invalid ID format: {e}", "alert-danger")
+        return False
+    
+    
+def remove_team_leader(user_id, project_id):
+    try:
+        # Ensure IDs are valid ObjectId instances
+        user_id = str(user_id)  # Keep as string to match stored format
+        obj_project_id = ObjectId(project_id)
+        
+        # Fetch the project
+        project = PROJECTS.find_one({"_id": obj_project_id})
+        if not project:
+            flash("Project not found", "alert-danger")
+            return False
+        
+        # Check if the user is already a team leader
+        team_leaders = project.get("team_leaders", [])
+        if user_id not in team_leaders:
+            flash("User is not a team leader for this project", "alert-danger")
+            return False
+        
+        if len(team_leaders) <= 1:
+            flash("Cannot remove the only team leader.", "alert-warning")
+            return False
+
+        # Remove the user from the team_leaders array
+        PROJECTS.update_one(
+            {"_id": obj_project_id},
+            {"$pull": {"team_leaders": user_id}}
+        )
+        
+        flash("Team leader role removed successfully", "alert-info")
+        return True
+
+    except Exception as e:
+        # Log the error and flash a message
+        flash(f"An error occurred: {str(e)}", "alert-danger")
+        return False

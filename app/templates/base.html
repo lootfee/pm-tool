@@ -35,8 +35,6 @@
             footer {
                 font-size: small;
             }
-
-            
         </style>
         {% endblock %}
     </head>
@@ -81,7 +79,7 @@
                 </div>
               </nav>
         </header>
-        <main>
+        <main class="mb-4">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
@@ -110,49 +108,30 @@
             crossorigin="anonymous"
         ></script>
         <script type="text/javascript">
-            // for disabling form submissions if there are invalid fields
-            // (function () {
-            // 'use strict'
-        
-            // // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            // var forms = document.querySelectorAll('.needs-validation')
-        
-            // // Loop over them and prevent submission
-            // Array.prototype.slice.call(forms)
-            //     .forEach(function (form) {
-            //     form.addEventListener('submit', function (event) {
-            //         if (!form.checkValidity()) {
-            //         event.preventDefault()
-            //         event.stopPropagation()
-            //         }
-        
-            //         form.classList.add('was-validated')
-            //     }, false)
-            //     })
-            // })()
+            document.addEventListener('DOMContentLoaded', function() {
+                // for bootstrap popovers
+                var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+                var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl)
+                });
 
-            // for bootstrap popovers
-            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-            var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
-            return new bootstrap.Popover(popoverTriggerEl)
-            });
+                // for bootstrap tool tips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
 
-            // for bootstrap tool tips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
-            });
-
-            //used in index and edit project page
-            // Function to set input value to 2 decimal points 
-            function setTwoNumberDecimal(event) { 
-                console.log(this.value)
-                this.value = parseFloat(this.value).toFixed(2); 
-            } 
-            
-            // Loop through every element with the class 'decimal-2' and add the onchange event listener 
-            document.querySelectorAll('.decimal-2').forEach(element => { 
-                element.addEventListener('change', setTwoNumberDecimal); 
+                //used in index and edit project page
+                // Function to set input value to 2 decimal points 
+                function setTwoNumberDecimal(event) { 
+                    console.log(this.value)
+                    this.value = parseFloat(this.value).toFixed(2); 
+                } 
+                
+                // Loop through every element with the class 'decimal-2' and add the onchange event listener 
+                document.querySelectorAll('.decimal-2').forEach(element => { 
+                    element.addEventListener('change', setTwoNumberDecimal); 
+                });
             });
         </script>
 

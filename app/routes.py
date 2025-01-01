@@ -2,7 +2,7 @@ from app import app, PROJECTS, TASKS, USERS, USER_PROJECTS, msal_app
 from flask import flash, render_template, redirect, url_for, request, jsonify, session
 from app.forms import ProjectForm, TaskForm, LoginForm, RegisterForm, AddMemberForm, UpdateUserForm
 from app.models import User
-from app.helpers import user_project_required, create_profile_pic, sort_tasks, allowed_file, basedir, day_mapping
+from app.helpers import user_project_required, project_team_leader_required, create_profile_pic, sort_tasks, allowed_file, basedir, day_mapping, assign_team_leader, remove_team_leader, remove_team_member
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
@@ -118,15 +118,15 @@ def project(project_id):
             children = []
         all_tasks.append({'_id': str(task['_id']), 'project_id': task['project_id'], "task_number": task['task_number'], "title": task['title'], 
                                     "expected_start_date": expected_start_date, "expected_end_date": expected_end_date, "actual_start_date": actual_start_date, 
-                                    "actual_end_date": actual_end_date, "optimistic_duration": task.get('optimistic_duration', ''), 
-                                    "expected_duration": task.get('expected_duration', ''), "pessimistic_duration": task.get('pessimistic_duration', ''), 
-                                    "reserve_analysis": task.get('reserve_analysis', ''), "total_expected_duration": task.get('total_expected_duration', ''), 
-                                    "total_actual_duration": task.get('total_actual_duration', ''), "comments": task.get('comments', ''), 
+                                    "actual_end_date": actual_end_date, "optimistic_duration": task.get('optimistic_duration', 0), 
+                                    "expected_duration": task.get('expected_duration', 0), "pessimistic_duration": task.get('pessimistic_duration', 0), 
+                                    "reserve_analysis": task.get('reserve_analysis', 0), "total_expected_duration": task.get('total_expected_duration', 0), 
+                                    "total_actual_duration": task.get('total_actual_duration', 0), "comments": task.get('comments', ''), 
                                     "parent_task_id": task['parent_task_id'], "completion": task['completion'], "hierarchy": task['hierarchy'],
                                     "dependency": task['dependency'], "level": task['level'], "children": children, 
                                     "owners": task['owners'], "owner_names": owner_names, "owner_pics": owner_pics})
-        form.parent_task.choices.append((task['_id'], task['title']))
-        form.dependency.choices.append((task['_id'], task['title']))
+        form.parent_task.choices.append((task['_id'], f'{task['task_number']} {task['title']}'))
+        form.dependency.choices.append((task['_id'], f'{task['task_number']} {task['title']}'))
 
     # pprint(all_tasks)
     active_tab = request.args.get('active_tab', str)
@@ -138,7 +138,8 @@ def project(project_id):
     valid_form = True
     if request.method == 'POST':
         valid_form = form.validate()
-    print(form.errors)
+    # print(form.errors)
+    # print(valid_form)
     if form.validate_on_submit():
         task_id = form.task_id.data
         task_number = form.task_number.data
@@ -239,7 +240,7 @@ def edit_project(project_id):
     add_member_form = AddMemberForm()
     form = ProjectForm()
     edit_project = PROJECTS.find_one({'_id': ObjectId(project_id)})
-    
+    project_team_leaders = edit_project['team_leaders']
     project_members = []
     for member in edit_project['members']:
         m = USERS.find_one(ObjectId(member))
@@ -290,7 +291,7 @@ def edit_project(project_id):
         form.friday.data = edit_project['work_days']['friday']
         form.saturday.data = edit_project['work_days']['saturday']
         form.sunday.data = edit_project['work_days']['sunday']
-    return render_template('edit_project.html', title='PM TOOL', form=form, project_title=edit_project['title'], 
+    return render_template('edit_project.html', title='PM TOOL', form=form, project_title=edit_project['title'], project_team_leaders=project_team_leaders,
                            project_members=project_members, project_id=project_id, add_member_form=add_member_form)
 
 
@@ -311,17 +312,13 @@ def add_member(project_id):
     return redirect(url_for('edit_project', project_id=project_id))
 
 
-@app.route('/remove_member/<string:project_id>/<string:member_id>', methods=['GET', 'POST'])
+@app.route('/remove_member/<string:project_id>/<string:member_id>', methods=['POST'])
 @login_required
 @user_project_required
 def remove_member(project_id, member_id):
-    project = PROJECTS.find_one({'_id': ObjectId(project_id)})
-    member = USERS.find_one({'_id': ObjectId(member_id)})
-    
-    USER_PROJECTS.update_one({'user_id':str(member['_id'])}, {'$pull': {'projects': str(project['_id'])}})
-    PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'members': str(member['_id'])}})
-    flash(f'User {member['name']} has been removed from the project', 'alert-info')
-    return redirect(request.referrer or url_for('index'))
+    if remove_team_member(member_id, project_id):
+        return redirect(url_for('edit_project', project_id=project_id))
+    return redirect(url_for('edit_project', project_id=project_id))
     # if request.referrer == url_for('index'):
     #     return redirect(url_for('index'))
     # return redirect(url_for('edit_project', project_id=project_id))
@@ -524,3 +521,20 @@ def delete_user(user_id):
 
     flash('User deleted successfully', 'alert-success')
     return redirect(url_for('index'))
+
+@app.route('/assign_project_team_leader/<user_id>/<project_id>', methods=['POST'])
+@login_required
+@project_team_leader_required
+def assign_project_team_leader(user_id, project_id):
+    if assign_team_leader(user_id, project_id):
+        return redirect(url_for('edit_project', project_id=project_id))
+    return redirect(url_for('edit_project', project_id=project_id))
+
+
+@app.route('/remove_project_team_leader/<user_id>/<project_id>', methods=['POST'])
+@login_required
+@project_team_leader_required
+def remove_project_team_leader(user_id, project_id):
+    if remove_team_leader(user_id, project_id):
+        return redirect(url_for("edit_project", project_id=project_id))
+    return redirect(url_for("edit_project", project_id=project_id))

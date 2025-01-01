@@ -47,7 +47,7 @@ class MultiCheckboxField(SelectMultipleField):
 
 class ProjectForm(FlaskForm):
     name = StringField('Project Name', validators=[DataRequired()])
-    description = TextAreaField('Description')
+    description = TextAreaField('Description', render_kw={'maxlength': 100, 'placeholder': 'Max 100 characters'})
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
     monday = FloatField('Monday', validators=[Optional(), NumberRange(min=0, max=100)], default=0)
@@ -69,7 +69,7 @@ class TaskForm(FlaskForm):
     expected_duration = IntegerField('Expected Duration', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
     pessimistic_duration = IntegerField('Pessimistic Duration', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
     reserve_analysis = IntegerField('Reserve Analysis', validators=[NumberRange(min=0, max=100)], default=0, render_kw={'placeholder': 'Number of work hours'})
-    comments = TextAreaField('Comments', validators=[Optional()])
+    comments = TextAreaField('Comments', validators=[Optional()], render_kw={'maxlength': 100, 'placeholder': 'Max 100 characters'})
     expected_start_date = DateField('Expected Start Date', validators=[DataRequired()])
     expected_end_date = DateField('Estimated End Date', validators=[DataRequired()], render_kw={'readonly': True})
     total_expected_duration = FloatField('Total expected Duration', validators=[Optional(), NumberRange(min=0, max=100)], default=0, render_kw={'readonly': True})

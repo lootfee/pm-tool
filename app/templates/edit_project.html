@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row mt-3">
         <div class="col-11">
-            <h3>Edit Project {{ project_title }}</h3>
+            <h3>Edit Project - {{ project_title }}</h3>
         </div>
         <div class="col-1">
             <a href="{{ url_for('project', project_id=project_id) }}" class="btn btn-primary">
@@ -40,6 +40,7 @@
                         <div class="mb-3">
                             {{ form.description.label(class="form-label")}}
                             {{ form.description(class="form-control") }}
+                            <div class="d-flex justify-content-end fs-6 text-body-tertiary" id="character-count">0 / 100 characters</div>
                             {% if form.description.errors %}
                                 <ul class="errors">
                                 {% for error in form.description.errors %}
@@ -217,8 +218,6 @@
                 {% endif %}
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" name="email" placeholder="User email">
-                    <!-- <input type="text" class="form-control" name="email" aria-describedby="email_addon">
-                    <span class="input-group-text" id="email_addon">@saskpolytech.ca</span> -->
                     <button type="submit" class="btn btn-primary"> Add</button>
                 </div>
             </form>
@@ -227,24 +226,57 @@
             <label class="form-label">Members</label>
             <table class="table table-bordered">
                 <thead>
-                    <th>Name</th>
-                    <th style="width: 1%">Action</th>
+                    <tr>
+                        <th width="70%">Name</th>
+                        <th class="text-center">Member</th>
+                        <th class="text-center">Team Leader</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for member in project_members %}
                     <tr>
-                        <td>{{ member[1]}}</td>
-                        <td>
-                            {% if member[0] != current_user.id %}
-                            <button class="btn btn-danger" type="button" data-bs-toggle="popover"
-                            data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
-                            title="Are you sure you want to remove user {{ member[1]}}?"
-                            data-bs-content="<a class='btn btn-danger' 
-                                                    href='{{ url_for('remove_member', project_id=project_id, member_id=member[0])}}'>
-                                                        Remove 
-                                                    </a>">           
-                                Remove
-                            </button>
+                        <td>{{ member[1] }}</td>
+                        <td class="text-center">
+                            {% if current_user.is_team_leader(project_id) %}
+                                {% if member[0] != current_user.id or project_team_leaders|length > 1 %}
+                                    <!-- Remove Member Button -->
+                                    <button class="btn btn-danger" type="button" data-bs-toggle="popover"
+                                        data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
+                                        title="Are you sure you want to remove {{ member[1] }} from the project?"
+                                        data-bs-content="<a class='btn btn-danger' href='{{ url_for('remove_member', project_id=project_id, member_id=member[0]) }}'>Confirm</a>">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                {% else %}
+                                    <div class="btn btn-secondary" title="Cannot Remove Yourself">
+                                        <i class="bi bi-trash"></i> 
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </td>  
+                        <td class="text-center">
+                            <!-- Add or Remove Team Leader Button -->
+                            {% if current_user.is_team_leader(project_id) %}
+                                {% if member[0] in project_team_leaders %}
+                                    {% if member[0] != current_user.id or project_team_leaders|length > 1 %}
+                                        <button class="btn btn-warning" type="button" data-bs-toggle="popover"
+                                            data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
+                                            title="Remove {{ member[1] }} as Team Leader?"
+                                            data-bs-content="<a class='btn btn-warning' href='{{ url_for('remove_project_team_leader', project_id=project_id, user_id=member[0]) }}'>Confirm</a>">
+                                            <i class="bi bi-person-dash"></i>
+                                        </button>
+                                    {% else %}
+                                        <div class="btn btn-secondary" title="Cannot Remove Yourself">
+                                            <i class="bi bi-person-dash" ></i> 
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <button class="btn btn-success" type="button" data-bs-toggle="popover"
+                                        data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
+                                        title="Add {{ member[1] }} as Team Leader?"
+                                        data-bs-content="<a class='btn btn-success' href='{{ url_for('assign_project_team_leader', project_id=project_id, user_id=member[0]) }}'>Confirm</a>">
+                                        <i class="bi bi-person-plus"></i>
+                                    </button>
+                                {% endif %}
                             {% endif %}
                         </td>
                     </tr>
@@ -252,7 +284,6 @@
                 </tbody>
             </table>            
         </div>
-
     </div>
 </div>
 
@@ -261,5 +292,20 @@
 {% endblock %}
 
 {% block scripts %}
+{{ super() }}   
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const textArea = document.getElementById('description');
+        const charCount = document.getElementById('character-count');
 
+        // display character count on load
+        let currentLength = textArea.value.length;
+        charCount.textContent = `${currentLength} / 100 characters`;
+
+        textArea.addEventListener('input', () => {
+            currentLength = textArea.value.length;
+            charCount.textContent = `${currentLength} / 100 characters`;
+        });
+    });
+</script>
 {% endblock %}

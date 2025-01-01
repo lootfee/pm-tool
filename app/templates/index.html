@@ -15,19 +15,18 @@
 
     <!-- Header Row for Project Details -->
     <div class="row fw-semibold text-muted border-bottom py-2">
-        <div class="col-2">Title</div>
+        <div class="col-3">Title</div>
         <div class="col-5">Description</div>
         <div class="col-2">Start Date</div>
         <div class="col-2">End Date</div>
-        <div class="col-1 text-center">Action</div>
     </div>
 
     <!-- Project Items -->
     {% for project in projects %}
     <div class="row align-items-center">
-        <a href="{{ url_for('project', project_id=project['_id']) }}" class="text-decoration-none col-11">
+        <a href="{{ url_for('project', project_id=project['_id']) }}" class="text-decoration-none col-12">
             <div class="row py-3 border-bottom project-item">
-                <div class="col-2 text-primary fw-medium">
+                <div class="col-3 text-primary fw-medium">
                     {{ project['title'] }}
                 </div>
                 <div class="col-5 text-secondary">
@@ -42,7 +41,7 @@
             </div>
         </a>
         
-        <!-- Action Button with Popover -->
+        <!-- Action Button with Popover
         <div class="col-1 text-center py-2 border-bottom">
             <button class="btn btn-outline-danger" type="button" data-bs-toggle="popover"
                 data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
@@ -55,7 +54,7 @@
                                         </a></div>">
                 <i class="bi bi-folder-x"></i>
             </button>
-        </div>
+        </div> -->
     </div>
     {% endfor %}
 </div>
@@ -77,56 +76,32 @@
             <div class="mb-3">
                 {{ form.name.label(class="form-label")}}
                 {{ form.name(class="form-control") }}
-                <div class="invalid-feedback">
-                    Required.
-                </div>
-                {% if form.name.errors %}
-                    <ul class="errors">
-                    {% for error in form.name.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
+                {% for error in form.name.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="mb-3">
                 {{ form.description.label(class="form-label")}}
                 {{ form.description(class="form-control") }}
-                {% if form.description.errors %}
-                    <ul class="errors">
-                    {% for error in form.description.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
+                <div class="d-flex justify-content-end fs-6 text-body-tertiary" id="character-count">0 / 100 characters</div>
+                {% for error in form.description.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
             <div class="row">
                 <div class="col-6 mb-3">
                     {{ form.start_date.label(class="form-label")}}
                     {{ form.start_date(class="form-control") }}
-                    <div class="invalid-feedback">
-                        Required.
-                    </div>
-                    {% if form.start_date.errors %}
-                        <ul class="errors">
-                        {% for error in form.start_date.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
+                    {% for error in form.start_date.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
                 </div>
                 <div class="col-6 mb-3">
                     {{ form.end_date.label(class="form-label")}}
                     {{ form.end_date(class="form-control") }}
-                    <div class="invalid-feedback">
-                        Required.
-                    </div>
-                    {% if form.end_date.errors %}
-                        <ul class="errors">
-                        {% for error in form.end_date.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                        </ul>
-                    {% endif %}
+                    {% for error in form.end_date.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
                 </div>
             </div>
             <div class="mb-3">
@@ -139,13 +114,9 @@
                                 {{ form.monday(class="form-control decimal-2", **{"aria-describedby": "monday_addon"}) }}
                                 <span class="input-group-text" id="monday_addon"> hrs</span>
                             </div>
-                            {% if form.monday.errors %}
-                                <ul class="errors">
-                                {% for error in form.monday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.monday.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-4">
@@ -155,13 +126,9 @@
                                 {{ form.tuesday(class="form-control decimal-2", **{"aria-describedby": "tuesday_addon"}) }}
                                 <span class="input-group-text" id="tuesday_addon"> hrs</span>
                             </div>
-                            {% if form.tuesday.errors %}
-                                <ul class="errors">
-                                {% for error in form.tuesday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.tuesday.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-4">
@@ -171,13 +138,9 @@
                                 {{ form.wednesday(class="form-control decimal-2", **{"aria-describedby": "wednesday_addon"}) }}
                                 <span class="input-group-text" id="wednesday_addon"> hrs</span>
                             </div>
-                            {% if form.wednesday.errors %}
-                                <ul class="errors">
-                                {% for error in form.wednesday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.wednesday.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -189,13 +152,9 @@
                                 {{ form.thursday(class="form-control decimal-2", **{"aria-describedby": "thursday_addon"}) }}
                                 <span class="input-group-text" id="thursday_addon"> hrs</span>
                             </div>
-                            {% if form.thursday.errors %}
-                                <ul class="errors">
-                                {% for error in form.thursday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.thursday.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-4">
@@ -205,13 +164,9 @@
                                 {{ form.friday(class="form-control decimal-2", **{"aria-describedby": "friday_addon"}) }}
                                 <span class="input-group-text" id="friday_addon"> hrs</span>
                             </div>
-                            {% if form.friday.errors %}
-                                <ul class="errors">
-                                {% for error in form.friday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.friday.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-4">
@@ -221,13 +176,9 @@
                                 {{ form.saturday(class="form-control decimal-2", **{"aria-describedby": "saturday_addon"}) }}
                                 <span class="input-group-text" id="saturday_addon"> hrs</span>
                             </div>
-                            {% if form.saturday.errors %}
-                                <ul class="errors">
-                                {% for error in form.saturday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.saturday.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-4">
@@ -237,13 +188,9 @@
                                 {{ form.sunday(class="form-control decimal-2", **{"aria-describedby": "sunday_addon"}) }}
                                 <span class="input-group-text" id="sunday_addon"> hrs</span>
                             </div>
-                            {% if form.sunday.errors %}
-                                <ul class="errors">
-                                {% for error in form.sunday.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+                            {% for error in form.sunday.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -266,4 +213,24 @@
         background-color: #f8f9fa;
     }
 </style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const textArea = document.getElementById('description');
+        const charCount = document.getElementById('character-count');
+
+        textArea.addEventListener('input', () => {
+            const currentLength = textArea.value.length;
+            charCount.textContent = `${currentLength} / 100 characters`;
+        });
+
+        const newProjectModal = new bootstrap.Modal('#newProjectModal');
+        {% if form.errors %}
+            newProjectModal.show();
+        {% endif %}
+    });
+</script>
 {% endblock %}

@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
-                            name: allTasks[i]['title'],
+                            name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
                             label: allTasks[i]['title'],
                             parent: allTasks[i]['parent_task_id'],
                             dependency: allTasks[i]['dependency'],
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
-                            name: allTasks[i]['title'],
+                            name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
                             label: allTasks[i]['title'],
                             parent: allTasks[i]['parent_task_id'],
                             dependency: allTasks[i]['dependency'],
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
-                            name: allTasks[i]['title'],
+                            name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
                             label: allTasks[i]['title'],
                             // parent: allTasks[i]['parent_task_id'],
                             start: Date.parse(allTasks[i]['actual_start_date']),
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
-                            name: allTasks[i]['title'],
+                            name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
                             label: allTasks[i]['title'],
                             // parent: allTasks[i]['parent_task_id'],
                             start: Date.parse(allTasks[i]['expected_start_date']),
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ganttDataArr.push(
                 {
                     id: allTasks[i]['_id'],
-                    name: allTasks[i]['title'],
+                    name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
                     label: '',
                     // parent: allTasks[i]['parent_task_id'],
                     // start: null,
@@ -318,133 +318,133 @@ document.addEventListener('DOMContentLoaded', function() {
     const day = 24 * 36e5,
         today = Math.floor(Date.now() / day) * day;
 
-    const option1 = {
-        chart: {
-            // styledMode: true
-            plotBackgroundColor: 'rgba(128,128,128,0.02)',
-            plotBorderColor: 'rgba(128,128,128,0.1)',
-            plotBorderWidth: 1
-        },
-        title: {
-            text: projectTitle,
-        },
-        xAxis: [{
-            currentDateIndicator: {
-                color: '#2caffe',
-                dashStyle: 'ShortDot',
-                width: 5,
-                label: {
-                    format: 'Today'
-                }
-            },
-            min: Date.parse(projectStartDate) - 7 * day || today - 60 * day,
-            max: Date.parse(projectEndDate) + 7 * day || today + 60 * day,
-            custom: {
-                today,
-                // weekendPlotBands: true
-            }
-        }],
-        yAxis: {
-            uniqueNames: true,
-            type: 'category',
-            grid: {
-                enabled: true,
-                borderColor: 'rgba(0,0,0,0.3)',
-                borderWidth: 1,
-                columns: [{
-                    title: {
-                        text: 'Task'
-                    },
-                    labels: {
-                        format: '{point.name}'
-                    }
-                }, {
-                    title: {
-                        text: 'Action'
-                    },
-                    labels: {
-                        format: "<div class='button-container'>" + 
-                                "<button class='btn btn-info btn-sm editTaskBtn' title='Edit Task' id='ganttEditBtn-{point.y}-{point.id}' type='button'>" + 
-                                "<i class='bi bi-pencil-square'></i>" +
-                                "</button>" + 
-                                "<button class='btn btn-danger btn-sm deleteTaskBtn' title='Delete Task' id='ganttDeleteBtn-{point.y}-{point.id}' type='button'>" + 
-                                "<i class='bi bi-trash'></i>" + 
-                                "</button>" + 
-                                "</div>",
-                        useHTML: true,
-                    }
-                }]
-            },
-        },
-        navigator: {
-            enabled: true,
-            liveRedraw: true,
-            stickToMax: false,
-            handles: {
-                // backgroundColor: '',
-                borderColor: 'blue'
-            },
-            series: {
-                type: 'gantt',
-                pointPlacement: 0.5,
-                pointPadding: 0.25,
-                accessibility: {
-                    enabled: false
-                }
-            },
-            // yAxis: {
-            //     min: 0,
-            //     max: 3,
-            //     reversed: true,
-            //     categories: []
-            // }
-        },
+    // const option1 = {
+    //     chart: {
+    //         // styledMode: true
+    //         plotBackgroundColor: 'rgba(128,128,128,0.02)',
+    //         plotBorderColor: 'rgba(128,128,128,0.1)',
+    //         plotBorderWidth: 1
+    //     },
+    //     title: {
+    //         text: projectTitle,
+    //     },
+    //     xAxis: [{
+    //         currentDateIndicator: {
+    //             color: '#2caffe',
+    //             dashStyle: 'ShortDot',
+    //             width: 5,
+    //             label: {
+    //                 format: 'Today'
+    //             }
+    //         },
+    //         min: Date.parse(projectStartDate) - 7 * day || today - 60 * day,
+    //         max: Date.parse(projectEndDate) + 7 * day || today + 60 * day,
+    //         custom: {
+    //             today,
+    //             // weekendPlotBands: true
+    //         }
+    //     }],
+    //     yAxis: {
+    //         uniqueNames: true,
+    //         type: 'category',
+    //         grid: {
+    //             enabled: true,
+    //             borderColor: 'rgba(0,0,0,0.3)',
+    //             borderWidth: 1,
+    //             columns: [{
+    //                 title: {
+    //                     text: 'Task'
+    //                 },
+    //                 labels: {
+    //                     format: '{point.name}'
+    //                 }
+    //             }, {
+    //                 title: {
+    //                     text: 'Action'
+    //                 },
+    //                 labels: {
+    //                     format: "<div class='button-container'>" + 
+    //                             "<button class='btn btn-info btn-sm editTaskBtn' title='Edit Task' id='ganttEditBtn-{point.y}-{point.id}' type='button'>" + 
+    //                             "<i class='bi bi-pencil-square'></i>" +
+    //                             "</button>" + 
+    //                             "<button class='btn btn-danger btn-sm deleteTaskBtn' title='Delete Task' id='ganttDeleteBtn-{point.y}-{point.id}' type='button'>" + 
+    //                             "<i class='bi bi-trash'></i>" + 
+    //                             "</button>" + 
+    //                             "</div>",
+    //                     useHTML: true,
+    //                 }
+    //             }]
+    //         },
+    //     },
+    //     navigator: {
+    //         enabled: true,
+    //         liveRedraw: true,
+    //         stickToMax: false,
+    //         handles: {
+    //             // backgroundColor: '',
+    //             borderColor: 'blue'
+    //         },
+    //         series: {
+    //             type: 'gantt',
+    //             pointPlacement: 0.5,
+    //             pointPadding: 0.25,
+    //             accessibility: {
+    //                 enabled: false
+    //             }
+    //         },
+    //         // yAxis: {
+    //         //     min: 0,
+    //         //     max: 3,
+    //         //     reversed: true,
+    //         //     categories: []
+    //         // }
+    //     },
 
-        scrollbar: {
-            enabled: true
-        },
-        rangeSelector: {
-            enabled: true,
-            selected: 5
-        },
-        accessibility: {
-            keyboardNavigation: {
-                seriesNavigation: {
-                    mode: 'serialize'
-                }
-            },
-            // point: {
-            //     descriptionFormat: '{yCategory}. ' +
-            //         '{#if point.completed}Task {completed.amount} % ' +
-            //         'completed. {/if}' +
-            //         'Start {x:%Y-%m-%d}, end {x2:%Y-%m-%d}.'
-            // },
-            // series: {
-            //     descriptionFormat: '{name}'
-            // },
-        },
-        series: [{
-            name: projectTitle,
-            data: ganttDataArr,
-            dataLabels: [{
-                enabled: true,
-                format: '<div style="width: 20px; height: 20px; overflow: ' +
-                    'hidden; border-radius: 50%; margin-left: -5px">' +
-                    '<img src="https://www.gravatar.com/avatar/{point.id}" ' +
-                    'style="width: 30px; margin-left: -5px; margin-top: -2px">' +
-                    '</div>',
-                useHTML: true,
-                // align: 'left'
-            }]
-        }],
-        tooltip: {
-            pointFormat: '<div style="z-index:100"></div><span style="font-weight: bold">{point.name}</span><br>' +
-                '{point.start:%e %b} → {point.end:%e %b} <br>' +
-                'Completed: {#if point.completed.amount > 0}{(multiply point.completed.amount 100):.0f}{/if} %<br>' +
-                'Owner: {#if point.owner}{point.owner}{else} - {/if}</div>'
-        },
+    //     scrollbar: {
+    //         enabled: true
+    //     },
+    //     rangeSelector: {
+    //         enabled: true,
+    //         selected: 5
+    //     },
+    //     accessibility: {
+    //         keyboardNavigation: {
+    //             seriesNavigation: {
+    //                 mode: 'serialize'
+    //             }
+    //         },
+    //         // point: {
+    //         //     descriptionFormat: '{yCategory}. ' +
+    //         //         '{#if point.completed}Task {completed.amount} % ' +
+    //         //         'completed. {/if}' +
+    //         //         'Start {x:%Y-%m-%d}, end {x2:%Y-%m-%d}.'
+    //         // },
+    //         // series: {
+    //         //     descriptionFormat: '{name}'
+    //         // },
+    //     },
+    //     series: [{
+    //         name: projectTitle,
+    //         data: ganttDataArr,
+    //         dataLabels: [{
+    //             enabled: true,
+    //             format: '<div style="width: 20px; height: 20px; overflow: ' +
+    //                 'hidden; border-radius: 50%; margin-left: -5px">' +
+    //                 '<img src="https://www.gravatar.com/avatar/{point.id}" ' +
+    //                 'style="width: 30px; margin-left: -5px; margin-top: -2px">' +
+    //                 '</div>',
+    //             useHTML: true,
+    //             // align: 'left'
+    //         }]
+    //     }],
+    //     tooltip: {
+    //         pointFormat: '<div style="z-index:100"></div><span style="font-weight: bold">{point.name}</span><br>' +
+    //             '{point.start:%e %b} → {point.end:%e %b} <br>' +
+    //             'Completed: {#if point.completed.amount > 0}{(multiply point.completed.amount 100):.0f}{/if} %<br>' +
+    //             'Owner: {#if point.owner}{point.owner}{else} - {/if}</div>'
+    //     },
         
-    }
+    // }
 
     const ganttOptions = { 
         chart: {
@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         useHTML: true,
                     }
                 }, {title: {
-                    text: 'Optimistic Duration'
+                        text: 'Optimistic Duration'
                     },
                     labels: {
                         format: '{point.optimistic_duration}'
