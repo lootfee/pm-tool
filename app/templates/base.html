@@ -32,6 +32,15 @@
                 width: 2.5rem;
             }
 
+            #notificationBadge {
+                display: none; /* Hide badge initially */
+            }
+
+            .dropdown-menu {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
             footer {
                 font-size: small;
             }
@@ -61,12 +70,24 @@
                     <div class="text-white d-flex align-items-center">
                         {% if current_user.is_authenticated %}
                             <!-- Profile Picture and Username Link -->
-                            <a class="nav-link d-flex align-items-center me-3" href="{{ url_for('user_profile', user_id=current_user.id) }}">
+                            <a class="nav-link d-flex align-items-center me-2" href="{{ url_for('user_profile', user_id=current_user.id) }}">
                                 <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_pic) if current_user.profile_pic else url_for('static', filename='default-avatar.png') }}" 
                                      class="rounded-circle d-inline-block align-text-top" 
                                      alt="Profile Picture" width="30" height="30">
                                 <span class="ms-2">{{ current_user.name }}</span>
                             </a>
+
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm me-3 position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-bell-fill"></i>
+                                    <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        0
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" id="notificationList">
+                                    <li><p class="dropdown-item text-muted">No new notifications</p></li>
+                                </ul>
+                            </div>
                     
                             <!-- Logout Button -->
                             <a href="{{ url_for('logout') }}" class="nav-link d-flex align-items-center" title="Logout">
@@ -132,6 +153,86 @@
                 document.querySelectorAll('.decimal-2').forEach(element => { 
                     element.addEventListener('change', setTwoNumberDecimal); 
                 });
+
+
+                const notificationBadge = document.getElementById('notificationBadge');
+                const notificationList = document.getElementById('notificationList');
+                const notificationDropdown = document.getElementById('notificationDropdown');
+
+                // Function to fetch notifications
+                async function fetchNotifications() {
+                    try {
+                        const response = await fetch('/notifications'); // Adjust the route if necessary
+                        const notifications = await response.json();
+
+                        // Update badge count
+                        const count = notifications.length;
+                        if (count > 0) {
+                            notificationBadge.textContent = count;
+                            notificationBadge.style.display = 'inline';
+                            notificationDropdown.classList.add('btn-warning');
+                            notificationDropdown.classList.remove('btn-light');
+                        } else {
+                            notificationBadge.style.display = 'none';
+                            notificationDropdown.classList.remove('btn-warning');
+                            notificationDropdown.classList.add('btn-light');
+                        }
+
+                        // Populate dropdown menu
+                        notificationList.innerHTML = '';
+                        if (notifications.length > 0) {
+                            notifications.forEach(notification => {
+                                const listItem = document.createElement('li');
+                                listItem.innerHTML = `
+                                    <div class="d-flex justify-content-between align-items-center dropdown-item">
+                                        <div class="me-1">
+                                            <p class="mb-0">${notification.message}</p>
+                                            <small class="text-muted">${new Date(notification.timestamp).toLocaleString()}</small>
+                                        </div>
+                                        <button type="button" class="btn-close btn-sm" data-id="${notification._id}" aria-label="Close"></button>
+                                    </div>`;
+                                notificationList.appendChild(listItem);
+                            });
+
+                            // Add event listeners to the close buttons
+                            document.querySelectorAll('.btn-close').forEach(button => {
+                                button.addEventListener('click', async function () {
+                                    const notificationId = this.getAttribute('data-id');
+                                    await markNotificationAsRead(notificationId);
+                                    fetchNotifications(); // Refresh notifications after marking as read
+                                });
+                            });
+                        } else {
+                            const emptyItem = document.createElement('li');
+                            emptyItem.innerHTML = `<p class="dropdown-item text-muted">No new notifications</p>`;
+                            notificationList.appendChild(emptyItem);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching notifications:', error);
+                    }
+                }
+
+                // Function to mark a notification as read
+                async function markNotificationAsRead(notificationId) {
+                    try {
+                        await fetch(`/notifications/read/${notificationId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token() }}', // Include CSRF token if applicable
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error marking notification as read:', error);
+                    }
+                }
+
+
+                // Fetch notifications on page load
+                fetchNotifications();
+
+                // Refresh notifications periodically (e.g., every minute)
+                setInterval(fetchNotifications, 60000);
             });
         </script>
 
@@ -139,4 +240,6 @@
         
         {% endblock %}
     </body>
+
+
 </html>

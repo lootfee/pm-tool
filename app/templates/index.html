@@ -40,21 +40,6 @@
                 </div>
             </div>
         </a>
-        
-        <!-- Action Button with Popover
-        <div class="col-1 text-center py-2 border-bottom">
-            <button class="btn btn-outline-danger" type="button" data-bs-toggle="popover"
-                data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
-                aria-label="Opt out of project {{ project['title'] }}" 
-                title="Remove project? "
-                data-bs-content="<div class='mb-2'>Are you sure you want to remove project {{ project['title'] }}?</div>
-                                    <div><a class='btn btn-danger btn-sm' 
-                                        href='{{ url_for('remove_member', project_id=project['_id'], member_id=current_user.id) }}'>
-                                            <i class='bi bi-folder-x'></i> Remove
-                                        </a></div>">
-                <i class="bi bi-folder-x"></i>
-            </button>
-        </div> -->
     </div>
     {% endfor %}
 </div>

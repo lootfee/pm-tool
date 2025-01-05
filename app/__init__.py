@@ -42,6 +42,9 @@ try:
     TASKS = db["tasks"]
     USERS = db["users"]
     USER_PROJECTS = db["user_projects"]
+    PROJECT_INVITES = db['project_invites']
+    NOTIFICATIONS = db['notifications']
+    PROJECT_LOGS = db['project_logs']
 except Exception as e:
     app.logger.error(f"Failed to connect to MongoDB: {e}")
     raise

@@ -1,8 +1,8 @@
-from app import app, PROJECTS, TASKS, USERS, USER_PROJECTS, msal_app
+from app import app, PROJECTS, TASKS, USERS, USER_PROJECTS, PROJECT_INVITES, NOTIFICATIONS, PROJECT_LOGS, msal_app
 from flask import flash, render_template, redirect, url_for, request, jsonify, session
-from app.forms import ProjectForm, TaskForm, LoginForm, RegisterForm, AddMemberForm, UpdateUserForm
+from app.forms import ProjectForm, TaskForm, LoginForm, RegisterForm, AddMemberForm, UpdateUserForm, EditRoleForm, RemoveMemberForm
 from app.models import User
-from app.helpers import user_project_required, project_team_leader_required, create_profile_pic, sort_tasks, allowed_file, basedir, day_mapping, assign_team_leader, remove_team_leader, remove_team_member
+from app.helpers import user_project_required, project_team_leader_required, create_profile_pic, sort_tasks, allowed_file, basedir, day_mapping, create_notification, create_project_log
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
@@ -20,7 +20,7 @@ import os
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index/', methods=['GET', 'POST'])
 @login_required
-def index():
+def index(): # projects page
     form = ProjectForm()
     if form.validate_on_submit():
         title = form.name.data
@@ -56,6 +56,7 @@ def index():
         new_project = PROJECTS.insert_one({"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
                                            'work_days': work_days, 'total_hours': total_hours})
         USER_PROJECTS.update_one({'user_id': current_user.id}, {'$push': {'projects': str(new_project.inserted_id)}}, upsert=True)
+        create_project_log(str(new_project.inserted_id), str(current_user.id), "Project created")
 
         return redirect(url_for('index'))
 
@@ -202,6 +203,8 @@ def project(project_id):
             
                 if parent_task_id != "0": 
                     TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': task_id}}, upsert=True)
+                    create_notification(current_user.id, f'Task {task_number} {title} has been updated')
+                    create_project_log(project_id, current_user.id, 'Task', f'Task {task_number} {title} updated')
             except InvalidId:
                 flash('Invalid Task ID', 'alert-warning')
         else:
@@ -217,14 +220,11 @@ def project(project_id):
         
             if parent_task_id != "0": 
                 TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': str(new_task.inserted_id)}}, upsert=True)
+                
+            create_notification(current_user.id, f'Task {task_number} {title} has been created')
+            create_project_log(project_id, current_user.id, 'Task', f'Task {task_number} {title} created')
         
-        # to open the active tab where the user is after page refresh/form submit
-        # active_tab = request.args.get('active_tab', str)
-        # next_page = url_for('project', project_id=project_id)
-        # if active_tab:
-        #     next_page += f'?active_tab={active_tab}'
-        # print(next_page)
-        
+        # to open the active tab where the user is after page refresh/form submit        
         return redirect(request.referrer)
     return render_template('project_page.html', title='PM Tool', project_id=project_id, project_title=project['title'], 
                            project_start_date=project["start_date"], project_end_date=project["end_date"], form=form, 
@@ -237,8 +237,10 @@ def project(project_id):
 @login_required
 @user_project_required
 def edit_project(project_id):
-    add_member_form = AddMemberForm()
     form = ProjectForm()
+    add_member_form = AddMemberForm()
+    edit_role_form = EditRoleForm()
+    remove_member_form = RemoveMemberForm()
     edit_project = PROJECTS.find_one({'_id': ObjectId(project_id)})
     project_team_leaders = edit_project['team_leaders']
     project_members = []
@@ -276,6 +278,9 @@ def edit_project(project_id):
         
         PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$set': {"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
                                            'work_days': work_days, 'total_hours': total_hours}}, upsert=False)
+        
+        create_notification(current_user.id, f'Project {title} has been updated')
+        create_project_log(project_id, current_user.id, 'Project', f'Project {title} updated')
 
         return redirect(url_for('edit_project', project_id=project_id))
 
@@ -292,39 +297,156 @@ def edit_project(project_id):
         form.saturday.data = edit_project['work_days']['saturday']
         form.sunday.data = edit_project['work_days']['sunday']
     return render_template('edit_project.html', title='PM TOOL', form=form, project_title=edit_project['title'], project_team_leaders=project_team_leaders,
-                           project_members=project_members, project_id=project_id, add_member_form=add_member_form)
+                           project_members=project_members, project_id=project_id, add_member_form=add_member_form, edit_role_form=edit_role_form, 
+                           remove_member_form=remove_member_form)
 
 
-@app.route('/add_member/<string:project_id>/', methods=['GET', 'POST'])
+@app.route('/project/<string:project_id>/add_member/', methods=['GET', 'POST'])
 @login_required
 @user_project_required
-def add_member(project_id):
+@project_team_leader_required
+def invite_project_member(project_id):
     project = PROJECTS.find_one({'_id': ObjectId(project_id)})
     form = AddMemberForm()
     if form.validate_on_submit():
-        email = form.email.data
+        email = form.amf_email.data
         member = USERS.find_one({'email': email})
-        if member is not None:   
-            USER_PROJECTS.update_one({'user_id':str(member['_id'])}, {'$push': {'projects': str(project['_id'])}}, upsert=True)
-            PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$push': {'members': str(member['_id'])}}, upsert=True)
+        if member is not None:
+            has_invites = PROJECT_INVITES.find_one({'project_id':  project_id, 'user_id': str(member['_id'])})
+            if not has_invites:
+                PROJECT_INVITES.insert_one({"project_id": str(project_id), "user_id": str(member['_id']), "invited_by_id": current_user.id})
+                create_notification(str(member['_id']), f'You have been invited to join the project {project["title"]}.')
+                create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been invited to join the project.')
+                flash(f'An invitation to join the project {project['title']} has been sent to {member['name']}.', 'alert-info')
+            else:
+                flash(f'A previous invitation has been made and is waiting for acceptance from {member['name']}.', 'alert-warning')
         else:
             flash(f'No user is registered with {email} email address.', 'alert-warning')
     return redirect(url_for('edit_project', project_id=project_id))
 
 
-@app.route('/remove_member/<string:project_id>/<string:member_id>', methods=['POST'])
+@app.route('/project/<string:project_id>/accept_invite/<string:user_id>/', methods=['GET', 'POST']) 
+@login_required 
+def accept_project_invite(project_id, user_id): 
+    invite = PROJECT_INVITES.find_one({'project_id': project_id, 'user_id': user_id}) 
+    if invite is not None: 
+        project = PROJECTS.find_one({'_id': ObjectId(project_id)}) 
+        member = USERS.find_one({'_id': ObjectId(user_id)}) 
+        if member is not None: 
+            USER_PROJECTS.update_one({'user_id': str(member['_id'])}, {'$push': {'projects': str(project['_id'])}}, upsert=True) 
+            PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$push': {'members': str(member['_id'])}}, upsert=True) 
+            PROJECT_INVITES.delete_one({'_id': invite['_id']}) 
+            create_notification(str(member['_id']), f'You have accepted to join the project {project["title"]}.')
+            create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has joined the project.')
+            flash(f'You have successfully joined the project {project['title']}.', 'alert-success') 
+        else: 
+            flash(f'Invalid invite.', 'alert-warning') 
+    else: 
+        flash(f'No invite found.', 'alert-warning') 
+    return redirect(url_for('user_profile', user_id=user_id))
+
+
+@app.route('/project/<string:project_id>/remove_member/', methods=['POST'])
 @login_required
 @user_project_required
-def remove_member(project_id, member_id):
-    if remove_team_member(member_id, project_id):
-        return redirect(url_for('edit_project', project_id=project_id))
+@project_team_leader_required
+def remove_project_member(project_id):
+    project = PROJECTS.find_one({'_id': ObjectId(project_id)})
+    if not project:
+            flash("Invalid project.", "alert-danger")
+            return redirect(url_for('index'))
+        
+    form = RemoveMemberForm()
+    if form.validate_on_submit():
+        member_id = form.rmf_user_id.data
+        member = USERS.find_one({'_id': ObjectId(member_id)})
+        if not member:
+            flash("User not found.", "alert-danger")
+            
+        # Check if the user is a team leader and cannot be removed if there is only one team leader left
+        if member_id in project.get("team_leaders", []) and len(project.get("team_leaders", [])) <= 1:
+            flash("Cannot remove the only team leader.", "alert-warning")
+            
+        # Check if the user has assigned tasks
+        assigned_tasks = TASKS.count_documents({"project_id": project_id, "owners": {"$in": [member_id]}})
+        if assigned_tasks > 0:
+            flash(f"User {member['name']} has assigned tasks. Reassign tasks before removing.", "alert-warning")
+            
+        
+        USER_PROJECTS.update_one({'user_id':str(member['_id'])}, {'$pull': {'projects': str(project['_id'])}})
+        PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'members': str(member['_id'])}})
+        
+        # If the user was a team leader, remove them from the project
+        if member_id in project.get("team_leaders"):
+            PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'team_leaders': str(member['_id'])}})
+            
+        create_notification(str(member['_id']), f'You have been removed from project {project["title"]}.')
+        create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been removed the project.')
+        flash(f'User {member['name']} has been removed from the project', 'alert-info')
+        
     return redirect(url_for('edit_project', project_id=project_id))
-    # if request.referrer == url_for('index'):
-    #     return redirect(url_for('index'))
-    # return redirect(url_for('edit_project', project_id=project_id))
+    
+    
+@app.route('/project/<string:project_id>/update_role/', methods=['POST'])
+@login_required
+@user_project_required
+@project_team_leader_required
+def update_project_member_role(project_id):
+    project = PROJECTS.find_one({'_id': ObjectId(project_id)})
+    if not project: 
+        flash("Invalid project.", "alert-danger")
+        return redirect(url_for('index'))
+        
+    form = EditRoleForm()
+    if form.validate_on_submit():
+        user_id = form.erf_user_id.data
+        new_role = form.erf_role.data
+        
+        member = USERS.find_one({'_id': ObjectId(user_id)})
+        if not member:
+            flash("User not found.", "alert-danger")
+        
+        if new_role not in ['member', 'team_leader']:
+            flash("Invalid role.", "alert-warning")
+            
+        if new_role == 'team_leader':
+            if user_id not in project.get("team_leaders", []):
+                PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$addToSet': {'team_leaders': user_id}})
+                create_notification(str(member['_id']), f'You have been added as team leader for project {project["title"]}.')
+                create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been added as team leader.')
+                flash(f'User {member['name']} has been added as project team leader', 'alert-info')
+        elif new_role == 'member':
+            if user_id in project.get("team_leaders", []):
+                if len(project.get("team_leaders", [])) > 1:  # Ensure at least one team leader remains
+                    PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'team_leaders': user_id}})
+                    create_notification(str(member['_id']), f'Your role has been changed to "Member" for project {project["title"]}.')
+                    create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been given the role "Member".')
+                    flash(f'User {member['name']} role has been updated', 'alert-info')
+                else:
+                    flash("Cannot remove the only team leader.", "alert-warning")
+            
+    return redirect(url_for('edit_project', project_id=project_id))
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/projects/<project_id>/logs', methods=['GET'])
+@login_required
+@user_project_required
+def get_project_logs(project_id):
+    logs = PROJECT_LOGS.find({"project_id": project_id}).sort("timestamp", -1)
+    logs_list = [
+        {
+            "_id": str(log["_id"]),
+            "user_name": get_user(log["user_id"])['name'],
+            "action": log["action"],
+            "details": log["details"] if "details" in log else "N/A",
+            "timestamp": log["timestamp"],
+        }
+        for log in logs
+    ]
+    return jsonify(logs_list)
+
+    
+@app.route('/register/', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -350,7 +472,7 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-@app.route('/msal_login')
+@app.route('/msal_login/')
 def msal_login():
     # Generate the authorization URL
     auth_url = msal_app.get_authorization_request_url(
@@ -360,7 +482,7 @@ def msal_login():
     return redirect(auth_url)
 
 
-@app.route('/auth/callback')
+@app.route('/auth/callback/')
 def auth_callback():
     # Get the authorization code from the URL
     code = request.args.get('code')
@@ -408,7 +530,7 @@ def auth_callback():
     return "Authorization code not found."
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -427,7 +549,7 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout/')
 def logout():
     logout_user()
     session.clear()
@@ -439,7 +561,7 @@ def logout():
 
 
 # GET - Retrieve user details by _id
-@app.route('/api/user/<user_id>', methods=['GET'])
+@app.route('/api/user/<user_id>/', methods=['GET'])
 def get_user(user_id):
     try:
         user = USERS.find_one({"_id": ObjectId(user_id)})
@@ -452,7 +574,7 @@ def get_user(user_id):
 
 
 # Combined route to display and update user profile
-@app.route('/user/<user_id>', methods=['GET', 'POST'])
+@app.route('/user/<user_id>/', methods=['GET', 'POST'])
 def user_profile(user_id):
     user = USERS.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -503,38 +625,29 @@ def user_profile(user_id):
     return render_template('user.html', form=form, user=user)
 
 
-# POST - Delete User Account
-@app.route('/user/<user_id>/delete', methods=['POST'])
-def delete_user(user_id):
-    user = USERS.find_one({"_id": ObjectId(user_id)})
-
-    if not user:
-        flash('User not found', 'alert-danger')
-        return redirect(url_for('index'))
-
-    # Remove the profile picture if it exists
-    if 'profile_pic' in user and os.path.exists(user['profile_pic']):
-        os.remove(user['profile_pic'])
-
-    # Remove user from the database
-    USERS.delete_one({"_id": ObjectId(user_id)})
-
-    flash('User deleted successfully', 'alert-success')
-    return redirect(url_for('index'))
-
-@app.route('/assign_project_team_leader/<user_id>/<project_id>', methods=['POST'])
+@app.route('/notifications/read/<notification_id>/', methods=['POST'])
 @login_required
-@project_team_leader_required
-def assign_project_team_leader(user_id, project_id):
-    if assign_team_leader(user_id, project_id):
-        return redirect(url_for('edit_project', project_id=project_id))
-    return redirect(url_for('edit_project', project_id=project_id))
+def read_notification(notification_id):
+    try:
+        NOTIFICATIONS.update_one(
+            {"_id": ObjectId(notification_id), "user_id": current_user.id},
+            {"$set": {"read": True}}
+        )
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route('/remove_project_team_leader/<user_id>/<project_id>', methods=['POST'])
+@app.route('/notifications/', methods=['GET'])
 @login_required
-@project_team_leader_required
-def remove_project_team_leader(user_id, project_id):
-    if remove_team_leader(user_id, project_id):
-        return redirect(url_for("edit_project", project_id=project_id))
-    return redirect(url_for("edit_project", project_id=project_id))
+def get_notifications():
+    notifications = NOTIFICATIONS.find({"user_id": current_user.id, "read": {"$ne": True}}).sort("timestamp", -1)
+    notifications_list = [
+        {
+            "_id": str(notification["_id"]),
+            "message": notification["message"],
+            "timestamp": notification["timestamp"],
+        }
+        for notification in notifications
+    ]
+    return jsonify(notifications_list)

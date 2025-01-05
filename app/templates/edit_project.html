@@ -209,16 +209,16 @@
         </div>
     </div>
     <div class="row mt-2 mb-2">
-        <div class="col-6">
+        <div class="col-4">
             <label class="form-label">Add Member:</label>
-            <form method="post"m action="{{ url_for('add_member', project_id=project_id)}}">
+            <form method="post" action="{{ url_for('invite_project_member', project_id=project_id)}}">
                 {{ add_member_form.csrf_token }}
                 {% if add_member_form.csrf_token.errors %}
                     <div class="warning">You have submitted an invalid CSRF token</div>
                 {% endif %}
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" name="email" placeholder="User email">
-                    <button type="submit" class="btn btn-primary"> Add</button>
+                    {{ add_member_form.amf_email(class="form-control") }}
+                    {{ add_member_form.amf_submit(class="btn btn-primary") }}
                 </div>
             </form>
         </div>
@@ -227,9 +227,9 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th width="70%">Name</th>
-                        <th class="text-center">Member</th>
-                        <th class="text-center">Team Leader</th>
+                        <th style="width: 80%">Name</th>
+                        <th class="text-center">Role</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -237,52 +237,90 @@
                     <tr>
                         <td>{{ member[1] }}</td>
                         <td class="text-center">
-                            {% if current_user.is_team_leader(project_id) %}
-                                {% if member[0] != current_user.id or project_team_leaders|length > 1 %}
-                                    <!-- Remove Member Button -->
-                                    <button class="btn btn-danger" type="button" data-bs-toggle="popover"
-                                        data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
-                                        title="Are you sure you want to remove {{ member[1] }} from the project?"
-                                        data-bs-content="<a class='btn btn-danger' href='{{ url_for('remove_member', project_id=project_id, member_id=member[0]) }}'>Confirm</a>">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                {% else %}
-                                    <div class="btn btn-secondary" title="Cannot Remove Yourself">
-                                        <i class="bi bi-trash"></i> 
-                                    </div>
-                                {% endif %}
+                            {% if member[0] in project_team_leaders %}
+                                <span class="badge bg-success">Team Leader</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Member</span>
                             {% endif %}
-                        </td>  
+                        </td>
                         <td class="text-center">
-                            <!-- Add or Remove Team Leader Button -->
-                            {% if current_user.is_team_leader(project_id) %}
-                                {% if member[0] in project_team_leaders %}
-                                    {% if member[0] != current_user.id or project_team_leaders|length > 1 %}
-                                        <button class="btn btn-warning" type="button" data-bs-toggle="popover"
-                                            data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
-                                            title="Remove {{ member[1] }} as Team Leader?"
-                                            data-bs-content="<a class='btn btn-warning' href='{{ url_for('remove_project_team_leader', project_id=project_id, user_id=member[0]) }}'>Confirm</a>">
-                                            <i class="bi bi-person-dash"></i>
-                                        </button>
-                                    {% else %}
-                                        <div class="btn btn-secondary" title="Cannot Remove Yourself">
-                                            <i class="bi bi-person-dash" ></i> 
-                                        </div>
-                                    {% endif %}
-                                {% else %}
-                                    <button class="btn btn-success" type="button" data-bs-toggle="popover"
-                                        data-bs-html="true" data-bs-sanitize="false" data-bs-placement="top"
-                                        title="Add {{ member[1] }} as Team Leader?"
-                                        data-bs-content="<a class='btn btn-success' href='{{ url_for('assign_project_team_leader', project_id=project_id, user_id=member[0]) }}'>Confirm</a>">
-                                        <i class="bi bi-person-plus"></i>
-                                    </button>
-                                {% endif %}
+                            {% if current_user.is_team_leader(project_id) and (current_user.id != member[0] or project_team_leaders|length > 1) %}
+                            <button 
+                                class="btn btn-primary btn-sm edit-member-btn" 
+                                data-user-id="{{ member[0] }}" 
+                                data-user-name="{{ member[1] }}" 
+                                data-is-team-leader="{{ member[0] in project_team_leaders }}"
+                                title="Edit Role">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button 
+                                class="btn btn-danger btn-sm remove-member-btn" 
+                                data-user-id="{{ member[0] }}" 
+                                data-user-name="{{ member[1] }}"
+                                title="Remove Member">
+                                <i class="bi bi-trash"></i>
+                            </button>
                             {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>            
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Role -->
+    <div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="editMemberForm" method="POST" action="{{ url_for('update_project_member_role', project_id=project_id)}}">
+                {{ edit_role_form.csrf_token }}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editMemberModalLabel">Edit Member Role</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ edit_role_form.erf_user_id }}
+                        <div class="mb-3">
+                            <label for="editModalUserName" class="form-label">Member Name</label>
+                            <input type="text" class="form-control" id="editModalUserName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            {{ edit_role_form.erf_role.label(class="form-label") }}
+                            {{ edit_role_form.erf_role(class="form-select") }}
+                            
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {{ edit_role_form.erf_submit(class="btn btn-primary") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal for Removing Member -->
+    <div class="modal fade" id="removeMemberModal" tabindex="-1" aria-labelledby="removeMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="removeMemberForm" method="POST"  action="{{ url_for('remove_project_member', project_id=project_id)}}">
+                {{ remove_member_form.csrf_token }}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="removeMemberModalLabel">Remove Member</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ remove_member_form.rmf_user_id }}
+                        <p>Are you sure you want to remove <strong id="removeModalUserName"></strong> from the project?</p>
+                        <p class="text-danger">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        {{ remove_member_form.rmf_submit(class="btn btn-danger") }}
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -305,6 +343,43 @@
         textArea.addEventListener('input', () => {
             currentLength = textArea.value.length;
             charCount.textContent = `${currentLength} / 100 characters`;
+        });
+
+        function openEditModal(userId, userName, isTeamLeader) {
+            document.getElementById('erf_user_id').value = userId;
+            document.getElementById('editModalUserName').value = userName;
+            console.log(isTeamLeader)
+            document.getElementById('erf_role').value = isTeamLeader ? 'team_leader' : 'member';
+            const modal = new bootstrap.Modal(document.getElementById('editMemberModal'));
+            modal.show();
+        }
+
+        function openRemoveModal(userId, userName) {
+            document.getElementById('rmf_user_id').value = userId;
+            document.getElementById('removeModalUserName').textContent = userName;
+            const modal = new bootstrap.Modal(document.getElementById('removeMemberModal'));
+            modal.show();
+        }
+
+        // Add event listeners to edit buttons
+        document.querySelectorAll('.edit-member-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const userId = this.getAttribute('data-user-id');
+                const userName = this.getAttribute('data-user-name');
+                const isTeamLeader = this.getAttribute('data-is-team-leader') === 'True'; // to change to js boolean
+
+                openEditModal(userId, userName, isTeamLeader);
+            });
+        });
+
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-member-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const userId = this.getAttribute('data-user-id');
+                const userName = this.getAttribute('data-user-name');
+
+                openRemoveModal(userId, userName);
+            });
         });
     });
 </script>

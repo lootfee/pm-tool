@@ -339,6 +339,63 @@ document.addEventListener('DOMContentLoaded', function() {
         modalTitle.textContent = 'Add Task';
         Object.values(formElements).forEach(el => el.value = '');
     });
+
+
+    async function loadProjectLogs(projectId) {
+        const logsList = document.getElementById('logsList');
+        try {
+            const response = await fetch(`/projects/${projectId}/logs`);
+            const logs = await response.json();
+
+            logsList.innerHTML = ''; // Clear existing logs
+
+            logs.forEach(log => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+
+                // Determine the badge color based on log type
+                let badgeClass = '';
+                switch (log.action) {
+                    case 'Project':
+                        badgeClass = 'badge bg-primary';
+                        break;
+                    case 'Task':
+                        badgeClass = 'badge bg-warning text-dark';
+                        break;
+                    case 'Member':
+                        badgeClass = 'badge bg-success';
+                        break;
+                    default:
+                        badgeClass = 'badge bg-secondary';
+                }
+
+                // Format log message
+                listItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>${log.details}</strong>
+                        <span class="${badgeClass}">${log.action}</span>
+                    </div>
+                    <small class="d-block text-muted">
+                        <span class="text-start">${log.user_name}</span>
+                        <span class="float-end">${new Date(log.timestamp).toLocaleString()}</span>
+                    </small>
+                `;
+
+                logsList.appendChild(listItem);
+            });
+        } catch (error) {
+            console.error('Error fetching logs:', error);
+            logsList.innerHTML = `<li class="list-group-item text-danger">Failed to load logs.</li>`;
+        }
+    }
+    
+    // Trigger log loading when modal is shown
+    let logsModal = document.getElementById('logsModal');
+    logsModal.addEventListener('show.bs.modal', function () {
+        const projectId = this.getAttribute('data-project-id');
+        console.log(projectId)
+        loadProjectLogs(projectId);
+    });
 });
 
 // document.addEventListener('DOMContentLoaded', function() {

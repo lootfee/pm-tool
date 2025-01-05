@@ -36,8 +36,20 @@ class UpdateUserForm(FlaskForm):
 
 
 class AddMemberForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    submit = SubmitField('Add')
+    amf_email = StringField('Email', validators=[DataRequired(), Email()], render_kw={'placeholder': 'User Email Address'})
+    amf_submit = SubmitField('Add')
+    
+
+class EditRoleForm(FlaskForm):
+    erf_user_id = HiddenField('User ID', validators=[DataRequired()])
+    erf_role = SelectField('Role', choices=[("member", "Member"), ("team_leader", "Team Leader")])
+    erf_submit = SubmitField('Save')
+    
+    
+class RemoveMemberForm(FlaskForm):
+    rmf_user_id = HiddenField('User ID', validators=[DataRequired()])
+    rmf_submit = SubmitField('Remove')
+
 
 class MultiCheckboxField(SelectMultipleField):
     widget = ListWidget(prefix_label=False)
