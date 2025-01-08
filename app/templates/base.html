@@ -32,6 +32,13 @@
                 width: 2.5rem;
             }
 
+            .alert {
+                position: fixed;
+                right: 1%;
+                z-index: 100;
+                width: 40%;
+            }
+
             #notificationBadge {
                 display: none; /* Hide badge initially */
             }
@@ -70,7 +77,7 @@
                     <div class="text-white d-flex align-items-center">
                         {% if current_user.is_authenticated %}
                             <!-- Profile Picture and Username Link -->
-                            <a class="nav-link d-flex align-items-center me-2" href="{{ url_for('user_profile', user_id=current_user.id) }}">
+                            <a class="nav-link d-flex align-items-center me-2" href="{{ url_for('user_profile') }}">
                                 <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_pic) if current_user.profile_pic else url_for('static', filename='default-avatar.png') }}" 
                                      class="rounded-circle d-inline-block align-text-top" 
                                      alt="Profile Picture" width="30" height="30">
@@ -111,7 +118,8 @@
             {% endfor %}
             {% endif %}
             {% endwith %}
-            {% block content %}{% endblock %}
+            {% block content %}
+            {% endblock %}
         </main>
         <footer class="bg-light p-1 fixed-bottom text-muted">
             <span>&copy; {{ current_year }} PM Tool. All Rights Reserved.</span>
@@ -196,6 +204,7 @@
 
                             // Add event listeners to the close buttons
                             document.querySelectorAll('.btn-close').forEach(button => {
+                                
                                 button.addEventListener('click', async function () {
                                     const notificationId = this.getAttribute('data-id');
                                     await markNotificationAsRead(notificationId);

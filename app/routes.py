@@ -54,7 +54,7 @@ def index(): # projects page
             current_date += timedelta(days=1)
             
         new_project = PROJECTS.insert_one({"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
-                                           'work_days': work_days, 'total_hours': total_hours})
+                                           'work_days': work_days, 'total_hours': total_hours, 'team_leaders': [current_user.id]})
         USER_PROJECTS.update_one({'user_id': current_user.id}, {'$push': {'projects': str(new_project.inserted_id)}}, upsert=True)
         create_project_log(str(new_project.inserted_id), str(current_user.id), "Project created")
 
@@ -203,7 +203,7 @@ def project(project_id):
             
                 if parent_task_id != "0": 
                     TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': task_id}}, upsert=True)
-                    create_notification(current_user.id, f'Task {task_number} {title} has been updated')
+                    # create_notification(current_user.id, f'Task {task_number} {title} has been updated')
                     create_project_log(project_id, current_user.id, 'Task', f'Task {task_number} {title} updated')
             except InvalidId:
                 flash('Invalid Task ID', 'alert-warning')
@@ -221,7 +221,7 @@ def project(project_id):
             if parent_task_id != "0": 
                 TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': str(new_task.inserted_id)}}, upsert=True)
                 
-            create_notification(current_user.id, f'Task {task_number} {title} has been created')
+            # create_notification(current_user.id, f'Task {task_number} {title} has been created')
             create_project_log(project_id, current_user.id, 'Task', f'Task {task_number} {title} created')
         
         # to open the active tab where the user is after page refresh/form submit        
@@ -279,7 +279,7 @@ def edit_project(project_id):
         PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$set': {"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
                                            'work_days': work_days, 'total_hours': total_hours}}, upsert=False)
         
-        create_notification(current_user.id, f'Project {title} has been updated')
+        # create_notification(current_user.id, f'Project {title} has been updated')
         create_project_log(project_id, current_user.id, 'Project', f'Project {title} updated')
 
         return redirect(url_for('edit_project', project_id=project_id))
@@ -301,7 +301,7 @@ def edit_project(project_id):
                            remove_member_form=remove_member_form)
 
 
-@app.route('/project/<string:project_id>/add_member/', methods=['GET', 'POST'])
+@app.route('/project/<string:project_id>/add_member/', methods=['POST'])
 @login_required
 @user_project_required
 @project_team_leader_required
@@ -316,7 +316,7 @@ def invite_project_member(project_id):
             if not has_invites:
                 PROJECT_INVITES.insert_one({"project_id": str(project_id), "user_id": str(member['_id']), "invited_by_id": current_user.id})
                 create_notification(str(member['_id']), f'You have been invited to join the project {project["title"]}.')
-                create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been invited to join the project.')
+                create_project_log(str(project_id), current_user.id, 'Member', f'{member['name']} has been invited to join the project.')
                 flash(f'An invitation to join the project {project['title']} has been sent to {member['name']}.', 'alert-info')
             else:
                 flash(f'A previous invitation has been made and is waiting for acceptance from {member['name']}.', 'alert-warning')
@@ -325,25 +325,56 @@ def invite_project_member(project_id):
     return redirect(url_for('edit_project', project_id=project_id))
 
 
-@app.route('/project/<string:project_id>/accept_invite/<string:user_id>/', methods=['GET', 'POST']) 
-@login_required 
-def accept_project_invite(project_id, user_id): 
-    invite = PROJECT_INVITES.find_one({'project_id': project_id, 'user_id': user_id}) 
-    if invite is not None: 
-        project = PROJECTS.find_one({'_id': ObjectId(project_id)}) 
-        member = USERS.find_one({'_id': ObjectId(user_id)}) 
-        if member is not None: 
-            USER_PROJECTS.update_one({'user_id': str(member['_id'])}, {'$push': {'projects': str(project['_id'])}}, upsert=True) 
-            PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$push': {'members': str(member['_id'])}}, upsert=True) 
-            PROJECT_INVITES.delete_one({'_id': invite['_id']}) 
-            create_notification(str(member['_id']), f'You have accepted to join the project {project["title"]}.')
-            create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has joined the project.')
-            flash(f'You have successfully joined the project {project['title']}.', 'alert-success') 
-        else: 
-            flash(f'Invalid invite.', 'alert-warning') 
-    else: 
-        flash(f'No invite found.', 'alert-warning') 
-    return redirect(url_for('user_profile', user_id=user_id))
+@app.route('/projects/invite/<invite_id>/accept', methods=['POST'])
+@login_required
+def accept_project_invite(invite_id):
+    invite = PROJECT_INVITES.find_one({'_id': ObjectId(invite_id)})
+    if invite and invite['user_id'] == str(current_user.id):
+        project = PROJECTS.find_one({'_id': ObjectId(invite['project_id'])})
+        USER_PROJECTS.update_one({'user_id': str(current_user.id)}, {'$push': {'projects': str(project['_id'])}}, upsert=True) 
+        PROJECTS.update_one({'_id': project['_id']}, {'$push': {'members': str(current_user.id)}}, upsert=True)
+        PROJECT_INVITES.delete_one({'_id': ObjectId(invite_id)})
+        # create_notification(str(current_user.id), f'You have accepted to join the project {project["title"]}.')
+        create_project_log(str(project['_id']), current_user.id, 'Member', f'{current_user.name} has joined the project.')
+        flash('Project invitation accepted!', 'alert-success')
+    else:
+        flash('Invalid invitation!', 'alert-danger')
+    return redirect(url_for('user_profile'))
+
+
+@app.route('/projects/invite/<invite_id>/reject', methods=['POST'])
+@login_required
+def reject_project_invite(invite_id):
+    invite = PROJECT_INVITES.find_one({'_id': ObjectId(invite_id)})
+    if invite and invite['user_id'] == str(current_user.id):
+        project = PROJECTS.find_one({'_id': ObjectId(invite['project_id'])})
+        PROJECT_INVITES.delete_one({'_id': ObjectId(invite_id)})
+        create_project_log(str(project['_id']), current_user.id, 'Member', f'{current_user.name} has declined to join the project.')
+        flash('Project invitation rejected.', 'alert-info')
+    else:
+        flash('Invalid invitation!', 'alert-danger')
+    return redirect(url_for('user_profile'))
+
+
+# @app.route('/project/<string:project_id>/accept_invite/<string:user_id>/', methods=['POST']) 
+# @login_required 
+# def accept_project_invite(project_id, user_id): 
+#     invite = PROJECT_INVITES.find_one({'project_id': project_id, 'user_id': user_id}) 
+#     if invite is not None: 
+#         project = PROJECTS.find_one({'_id': ObjectId(project_id)}) 
+#         member = USERS.find_one({'_id': ObjectId(user_id)}) 
+#         if member is not None: 
+#             USER_PROJECTS.update_one({'user_id': str(member['_id'])}, {'$push': {'projects': str(project['_id'])}}, upsert=True) 
+#             PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$push': {'members': str(member['_id'])}}, upsert=True) 
+#             PROJECT_INVITES.delete_one({'_id': invite['_id']}) 
+#             create_notification(str(member['_id']), f'You have accepted to join the project {project["title"]}.')
+#             create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has joined the project.')
+#             flash(f'You have successfully joined the project {project['title']}.', 'alert-success') 
+#         else: 
+#             flash(f'Invalid invite.', 'alert-warning') 
+#     else: 
+#         flash(f'No invite found.', 'alert-warning') 
+#     return redirect(url_for('user_profile', user_id=user_id))
 
 
 @app.route('/project/<string:project_id>/remove_member/', methods=['POST'])
@@ -381,7 +412,7 @@ def remove_project_member(project_id):
             PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'team_leaders': str(member['_id'])}})
             
         create_notification(str(member['_id']), f'You have been removed from project {project["title"]}.')
-        create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been removed the project.')
+        create_project_log(str(project_id), current_user.id, 'Member', f'{member['name']} has been removed the project.')
         flash(f'User {member['name']} has been removed from the project', 'alert-info')
         
     return redirect(url_for('edit_project', project_id=project_id))
@@ -413,14 +444,14 @@ def update_project_member_role(project_id):
             if user_id not in project.get("team_leaders", []):
                 PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$addToSet': {'team_leaders': user_id}})
                 create_notification(str(member['_id']), f'You have been added as team leader for project {project["title"]}.')
-                create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been added as team leader.')
+                create_project_log(str(project_id), current_user.id, 'Member', f'{member['name']} has been added as team leader.')
                 flash(f'User {member['name']} has been added as project team leader', 'alert-info')
         elif new_role == 'member':
             if user_id in project.get("team_leaders", []):
                 if len(project.get("team_leaders", [])) > 1:  # Ensure at least one team leader remains
                     PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$pull': {'team_leaders': user_id}})
                     create_notification(str(member['_id']), f'Your role has been changed to "Member" for project {project["title"]}.')
-                    create_project_log(project_id, current_user.id, 'Member', f'{member['name']} has been given the role "Member".')
+                    create_project_log(str(project_id), current_user.id, 'Member', f'{member['name']} has been given the role "Member".')
                     flash(f'User {member['name']} role has been updated', 'alert-info')
                 else:
                     flash("Cannot remove the only team leader.", "alert-warning")
@@ -466,7 +497,6 @@ def register():
             flash('Email has already been registered', 'alert-warning')
         return redirect(url_for('login'))
     elif form.errors:
-        pprint(form.errors)
         form.name.data = form.name.data
         form.email.data = form.email.data
     return render_template('register.html', title='Register', form=form)
@@ -562,6 +592,7 @@ def logout():
 
 # GET - Retrieve user details by _id
 @app.route('/api/user/<user_id>/', methods=['GET'])
+@login_required
 def get_user(user_id):
     try:
         user = USERS.find_one({"_id": ObjectId(user_id)})
@@ -571,23 +602,47 @@ def get_user(user_id):
         return jsonify({'error': 'User not found'}), 404
     except Exception as e:
         return jsonify({'error': 'Invalid user ID'}), 400
+    
+    
+# GET - Retrieve user details by _id
+@app.route('/api/project/<project_id>/', methods=['GET'])
+@login_required
+def get_project(project_id):
+    try:
+        project = PROJECTS.find_one({"_id": ObjectId(project_id)})
+        if project:
+            return project
+        return jsonify({'error': 'Project not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'Invalid project ID'}), 400
 
 
 # Combined route to display and update user profile
-@app.route('/user/<user_id>/', methods=['GET', 'POST'])
-def user_profile(user_id):
-    user = USERS.find_one({"_id": ObjectId(user_id)})
-    if not user:
-        flash('User not found', 'alert-danger')
-        return redirect(url_for('index'))
-    
+@app.route('/user/', methods=['GET', 'POST'])
+@login_required
+def user_profile():
+    invites = list(PROJECT_INVITES.find({'user_id': str(current_user.id)}))
+    project_invites = []
+    if invites:
+        project_invites = [
+            {
+                "id": str(invite["_id"]),
+                "project_id": invite["project_id"],
+                "project_name": get_project(invite["project_id"])['title'],
+                "user_id": invite["user_id"],
+                "invited_by": get_user(invite["invited_by_id"])['name'],
+            }
+            for invite in invites
+        ]
+                
+    user = USERS.find_one({"_id": ObjectId(current_user.id)})
     form = UpdateUserForm()
 
     # Populate form with current user data if it's a GET request
     if request.method == 'GET':
-        form.name.data = user.get('name', '')
-        form.email.data = user.get('email', '')
-        return render_template('user.html', form=form, user=user)
+        form.name.data = current_user.name
+        form.email.data = current_user.email
+        
 
     # Handle form submission on POST
     if form.validate_on_submit():
@@ -614,15 +669,15 @@ def user_profile(user_id):
                 updated_data['profile_pic'] = filename
             else:
                 flash('Invalid file type for profile picture', 'alert-danger')
-                return redirect(url_for('user_profile', user_id=user_id))
+                return redirect(url_for('user_profile'))
 
         # Update user in database
-        USERS.update_one({"_id": ObjectId(user_id)}, {"$set": updated_data})
+        USERS.update_one({"_id": ObjectId(current_user.id)}, {"$set": updated_data})
         flash('Profile updated successfully', 'alert-success')
-        return redirect(url_for('user_profile', user_id=user_id))
+        return redirect(url_for('user_profile'))
     
     # If form validation fails, re-render the page with errors
-    return render_template('user.html', form=form, user=user)
+    return render_template('user.html', form=form, user=user, project_invites=project_invites)
 
 
 @app.route('/notifications/read/<notification_id>/', methods=['POST'])

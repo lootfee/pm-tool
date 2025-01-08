@@ -1,4 +1,38 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Helper function to get work hours for a specific day of the week
+    function getWorkHoursForDay(dayOfWeek) {
+        const dayMapping = {
+            0: 'sunday',
+            1: 'monday',
+            2: 'tuesday',
+            3: 'wednesday',
+            4: 'thursday',
+            5: 'friday',
+            6: 'saturday'
+        };
+
+        return workDays[dayMapping[dayOfWeek]] || 0;
+    }
+
+    // get ratio of work hours per 24 hrs
+    function getDayToWorkHoursRatio(taskDate, duration){
+        let dayToWorkHoursRatio;
+        if (duration > 0) {
+            // convert to Date object
+            let actualTaskDate = new Date(taskDate);
+            // get day of week
+            let dayOfWeek = actualTaskDate.getUTCDay();
+            // get ratio of work hours per 24 hr
+            let workHoursRatio = 24 / getWorkHoursForDay(dayOfWeek) * 60 * 60 * 1000;
+            // convert to date object with calculated ratio
+            dayToWorkHoursRatio = Date.parse(new Date(Date.parse(taskDate) + workHoursRatio));
+        }
+        else {
+            dayToWorkHoursRatio = Date.parse(taskDate);
+        }
+        return dayToWorkHoursRatio;
+    }
+
     let nodesArr = [
             {
                 id: '0',
@@ -53,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             parent: allTasks[i]['parent_task_id'],
                             dependency: allTasks[i]['dependency'],
                             start: Date.parse(allTasks[i]['actual_start_date']),
-                            end: Date.parse(allTasks[i]['actual_end_date']) || Date.parse(allTasks[i]['expected_end_date']),
+                            end: getDayToWorkHoursRatio(allTasks[i]['actual_end_date'], allTasks[i]['total_expected_duration']) || getDayToWorkHoursRatio(allTasks[i]['expected_end_date'], allTasks[i]['total_expected_duration']),//Date.parse(allTasks[i]['actual_end_date']) || Date.parse(allTasks[i]['expected_end_date']),
                             completed: {
                                 amount: allTasks[i]['completion'] / 100,
                             },
@@ -82,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             parent: allTasks[i]['parent_task_id'],
                             dependency: allTasks[i]['dependency'],
                             start: Date.parse(allTasks[i]['expected_start_date']),
-                            end: Date.parse(allTasks[i]['expected_end_date']),
+                            end: getDayToWorkHoursRatio(allTasks[i]['expected_end_date'], allTasks[i]['total_expected_duration']),//Date.parse(allTasks[i]['expected_end_date']),
                             owner: allTasks[i]['owner_names'],
                             owner_pics: allTasks[i]['owner_pics'].map(pic => 
                                 `<div style="width: 20px; height: 20px; overflow: hidden; border-radius: 50%; display: inline-block; margin-left: -10px;">
@@ -107,8 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
                             label: allTasks[i]['title'],
                             // parent: allTasks[i]['parent_task_id'],
-                            start: Date.parse(allTasks[i]['actual_start_date']),
-                            end: Date.parse(allTasks[i]['actual_end_date']) || Date.parse(allTasks[i]['expected_end_date']),
+                            start: Date.parse(allTasks[i]['actual_start_date'] + calculateWorkHoursRatio(expected_end_date)),
+                            end: getDayToWorkHoursRatio(allTasks[i]['actual_end_date'], allTasks[i]['total_expected_duration']) || getDayToWorkHoursRatio(allTasks[i]['expected_end_date'], allTasks[i]['total_expected_duration']),//Date.parse(allTasks[i]['actual_end_date']) || Date.parse(allTasks[i]['expected_end_date']),
                             completed: {
                                 amount: allTasks[i]['completion'] / 100,
                             },
@@ -136,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             label: allTasks[i]['title'],
                             // parent: allTasks[i]['parent_task_id'],
                             start: Date.parse(allTasks[i]['expected_start_date']),
-                            end: Date.parse(allTasks[i]['expected_end_date']),
+                            end: getDayToWorkHoursRatio(allTasks[i]['expected_end_date'], allTasks[i]['total_expected_duration']), //Date.parse(allTasks[i]['expected_end_date']),
                             owner: allTasks[i]['owner_names'],
                             owner_pics: allTasks[i]['owner_pics'].map(pic => 
                                 `<div style="width: 20px; height: 20px; overflow: hidden; border-radius: 50%; display: inline-block; margin-left: -10px;">
@@ -241,11 +275,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const colors = Highcharts.getOptions().colors;
     console.log('gant arr')
-    console.log(ganttDataArr)
+    console.log(ganttDataArr.length)
     // WBS chart --------------------------------------------------------
     Highcharts.chart('wbs-container', {
         chart: {
-            height: 800,
+            height: ganttDataArr.length * 40,//800,
             inverted: true
         },
 
@@ -454,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         plotOptions: {
             series: {
-                borderRadius: '50%',
+                borderRadius: '10%',
                 connectors: {
                     dashStyle: 'ShortDot',
                     lineWidth: 2,
@@ -637,9 +671,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // }
         },
         navigator: {
+            // height: 150,
             enabled: true,
-            liveRedraw: true,
-            stickToMax: false,
+            // liveRedraw: true,
+            // stickToMax: false,
             handles: {
                 // backgroundColor: '',
                 borderColor: 'blue'
@@ -649,7 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pointPlacement: 0.5,
                 pointPadding: 0.25,
                 accessibility: {
-                    enabled: false
+                    enabled: true
                 }
             },
         },

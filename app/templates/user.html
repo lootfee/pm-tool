@@ -2,10 +2,9 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class="col-6 shadow-sm mt-3 p-2 rounded">
-            <h1>User Profile</h1>
-
+    <div class="row mt-3">
+        <h1>User Profile</h1>
+        <div class="col-6 shadow-sm p-2 rounded">
             <form action="" method="post" enctype="multipart/form-data">
                 {{ form.hidden_tag() }}
 
@@ -41,6 +40,101 @@
                 </div>
             </form>
         </div>
+
+        <div class="col-6">
+            {% if project_invites %}
+            <h3>Project Invites</h3>
+                <ul class="list-group">
+                    {% for invite in project_invites %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ invite.project_name }}</strong>
+                                <small class="d-block text-muted">Invited by {{ invite.invited_by }}</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#acceptInviteModal" 
+                                        data-invite-id="{{ invite.id }}" data-project-name="{{ invite.project_name }}">Accept</button>
+                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectInviteModal" 
+                                        data-invite-id="{{ invite.id }}"  data-project-name="{{ invite.project_name }}">Reject</button>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Accept Invite Modal -->
+    <div class="modal fade" id="acceptInviteModal" tabindex="-1" aria-labelledby="acceptInviteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="acceptInviteModalLabel">Accept Invitation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                </div>
+                <div class="modal-footer">
+                    <form id="acceptInviteForm" method="post" action="">
+                        {{ form.csrf_token }}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Accept</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Invite Modal -->
+    <div class="modal fade" id="rejectInviteModal" tabindex="-1" aria-labelledby="rejectInviteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectInviteModalLabel">Reject Invitation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                </div>
+                <div class="modal-footer">
+                    <form id="rejectInviteForm" method="post" action="">
+                        {{ form.csrf_token }}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const acceptModal = document.getElementById('acceptInviteModal');
+        const rejectModal = document.getElementById('rejectInviteModal');
+
+        acceptModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Button that triggered the modal
+            const inviteId = button.getAttribute('data-invite-id');
+            const projectName = button.getAttribute('data-project-name');
+            const form = acceptModal.querySelector('form');
+            acceptModal.querySelector('.modal-body').innerText = `Accept invitation to join project ${projectName}?`;
+            form.action = `/projects/invite/${inviteId}/accept`;
+        });
+
+        rejectModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Button that triggered the modal
+            const inviteId = button.getAttribute('data-invite-id');
+            const projectName = button.getAttribute('data-project-name');
+            const form = rejectModal.querySelector('form');
+            rejectModal.querySelector('.modal-body').innerText = `Reject invitation to join project ${projectName}?`;
+            form.action = `/projects/invite/${inviteId}/reject`;
+        });
+    });
+
+</script>
 {% endblock %}
