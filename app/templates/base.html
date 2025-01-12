@@ -167,6 +167,7 @@
                 const notificationList = document.getElementById('notificationList');
                 const notificationDropdown = document.getElementById('notificationDropdown');
 
+                {% if current_user.is_authenticated %}
                 // Function to fetch notifications
                 async function fetchNotifications() {
                     try {
@@ -242,6 +243,8 @@
 
                 // Refresh notifications periodically (e.g., every minute)
                 setInterval(fetchNotifications, 60000);
+
+                {% endif %}
             });
         </script>
 

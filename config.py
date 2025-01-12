@@ -7,8 +7,12 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    ENV_TYPE = os.environ.get('ENV_TYPE')
     DB_USERNAME = os.environ.get('DB_USERNAME')
     DB_PASSWORD = os.environ.get('DB_PASSWORD')
+    DB_HOST = os.environ.get('DB_HOST')
+    DB_PORT = os.environ.get('DB_PORT')
+    DB_ATLAS_URI = os.environ.get('DB_ATLAS_URI')
     # Path for storing profile pictures
     PROFILE_PICS_PATH = os.path.join(basedir, 'app', 'static', 'profile_pics')
     MICROSOFT_CLIENT_ID = os.environ.get('MICROSOFT_CLIENT_ID')

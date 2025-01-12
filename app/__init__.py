@@ -5,6 +5,7 @@ from flask_wtf import CSRFProtect
 from config import Config
 from flask_login import LoginManager
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 from flask_bootstrap import Bootstrap5
 from msal import ConfidentialClientApplication
 
@@ -16,7 +17,6 @@ app.logger = logging.getLogger("pm-tool")
 
 # Ensure the PROFILE_PICS_PATH exists
 profile_pics_path = app.config["PROFILE_PICS_PATH"]
-print(os.path.exists(profile_pics_path))
 if not os.path.exists(profile_pics_path):
     os.makedirs(profile_pics_path)
     print(f"Created directory: {profile_pics_path}")
@@ -31,12 +31,15 @@ bootstrap = Bootstrap5(app)
 
 # Database connection
 try:
-    client = MongoClient(
-        host=app.config.get('DB_HOST', 'localhost'),
-        port=int(app.config.get('DB_PORT', 27017)),
-        username=app.config.get('DB_USERNAME'),
-        password=app.config.get('DB_PASSWORD')
-    )
+    if app.config.get('ENV_TYPE') == 'production':
+        client = MongoClient(app.config.get('DB_ATLAS_URI'), server_api=ServerApi('1'))
+    else:
+        client = MongoClient(
+            host=app.config.get('DB_HOST'),
+            port=int(app.config.get('DB_PORT')),
+            username=app.config.get('DB_USERNAME'),
+            password=app.config.get('DB_PASSWORD')
+        )
     db = client["pm-tool"]
     PROJECTS = db["projects"]
     TASKS = db["tasks"]
