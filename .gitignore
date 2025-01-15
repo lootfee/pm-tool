@@ -164,3 +164,4 @@ cython_debug/
 
 app/static/profile_pics/
 .flaskenv
+certs

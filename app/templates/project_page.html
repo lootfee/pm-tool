@@ -19,7 +19,7 @@
             <button class="nav-link {% if active_tab == 'nav-wbs-tab' %} active {% endif %}" id="nav-wbs-tab" data-bs-toggle="tab" data-bs-target="#nav-wbs" type="button" role="tab" aria-controls="nav-wbs" aria-selected="false">WBS</button>
             <button class="nav-link {% if active_tab == 'nav-gantt-tab' %} active {% endif %}" id="nav-gantt-tab" data-bs-toggle="tab" data-bs-target="#nav-gantt" type="button" role="tab" aria-controls="nav-gantt" aria-selected="false">GANTT</button>
             <div class="ms-auto">
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+              <button class="btn btn-primary" id="newTaskBtn" data-bs-toggle="modal" data-bs-target="#addTaskModal">
                 <i class="bi bi-clipboard2-plus"></i>
                 New Task
               </button>
@@ -234,7 +234,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
             {{ form.submit(class="btn btn-primary") }}
           </div>
         </form>
@@ -242,6 +242,29 @@
     </div>
   </div>
 
+  <!-- Delete Task Modal -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true" data-project-id="{{ project_id }}">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="deleteTaskModalLabel">Delete Task</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              Are you sure you want to delete the task "<span id="deleteTaskTitle"></span>"? This action cannot be undone.
+          </div>
+          <div class="modal-footer">
+              <form id="deleteTaskForm" method="post" action="">
+                  {{ form.csrf_token }}
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+  <!-- Project Logs Modal -->
   <div class="modal fade" id="logsModal" tabindex="-1" aria-labelledby="logsModalLabel" aria-hidden="true" data-project-id="{{ project_id }}">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -281,6 +304,7 @@
   let workDays = {{ work_days|safe }};
   let projectMembers = {{ project_members|safe }};
   let projectTotalHours = {{ project_total_hours|safe }};
+  
 </script>
 <script src="{{ url_for('static', filename='hcharts.js') }}"></script>
 <script src="{{ url_for('static', filename='projectPage.js') }}"></script>

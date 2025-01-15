@@ -58,7 +58,6 @@ def project_team_leader_required(f):
 def sort_tasks(project_id: str, parent_task_id: str, task_list: list):
     _tasks = sorted(list(TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})), key=lambda d: d['hierarchy'])
     for t in _tasks:
-        # print(t)
         task_list.append(t)
         sort_tasks(project_id, str(t["_id"]), task_list)
     return task_list
@@ -71,9 +70,8 @@ def update_child_tasks(project_id:str, parent_task_id:str):
     _t = None
     for t in _tasks:
         if parent_task_id != "0":
-            print(parent_task_id)
             TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': str(t["_id"])}}, upsert=True)
-            print(f'{TASKS.find_one(ObjectId(t["_id"]))}')
+        
         update_child_tasks(project_id, str(t["_id"]))
         # try:
         #     TASKS.update_one({'_id': ObjectId(parent_task_id)}, {'$addToSet': {'children': str(t["_id"])}}, upsert=True)

@@ -60,8 +60,9 @@ try:
         client_credential=app.config["MICROSOFT_CLIENT_SECRET"]
     )
 except Exception as e:
+    msal_app = None
     app.logger.error("Microsoft authentication initialization failed!")
-    raise
+    
 
 
 

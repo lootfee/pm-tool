@@ -33,14 +33,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return dayToWorkHoursRatio;
     }
 
-    let nodesArr = [
+    let wbsNodesArr = [
             {
                 id: '0',
                 name: projectTitle,
                 title: '',
             }
         ];
-    let dataArr = [];
+    let wbsDataArr = [];
+    let wbsColumns = 0; // used to calculate wbs chart height
     let ganttDataArr = [];
     let memberExpectedHours = {'total': 0}
     let memberActualHours = {'total': 0}
@@ -48,11 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
         memberExpectedHours[member] = 0;
         memberActualHours[member] = 0;
     });
-    console.log(memberExpectedHours)
     
     for(var i=0; i<allTasks.length; i++){
-        //   nodesArr - for WBS nodes
-        nodesArr.push(
+        // for WBS nodes
+        wbsNodesArr.push(
             {
                 id: allTasks[i]['_id'],
                 name: allTasks[i]['task_number'] + ' ' + allTasks[i]['title'],
@@ -62,16 +62,16 @@ document.addEventListener('DOMContentLoaded', function() {
         );
 
         // for WBS data
-        dataArr.push([allTasks[i]['parent_task_id'], allTasks[i]['_id']]);
+        wbsDataArr.push([allTasks[i]['parent_task_id'], allTasks[i]['_id']]);
 
-        console.log(allTasks[i]['title'])
+
         // for calculating total and member hours
         allTasks[i]['owner_names'].forEach(owner => {
             memberExpectedHours[owner] += Number(allTasks[i]['total_expected_duration']) || 0;
             memberActualHours[owner] += Number(allTasks[i]['total_actual_duration']) || 0;
             memberExpectedHours['total'] += Number(allTasks[i]['total_expected_duration']) || 0;
             memberActualHours['total'] += Number(allTasks[i]['total_actual_duration']) || 0;
-            console.log(memberExpectedHours['total'])
+            
         });
 
         // ganttArr - for gantt data
@@ -133,8 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     );
                 }
             } else {
+                wbsColumns += 1;
                 if (allTasks[i]['actual_start_date'] !== ''){
-                    
                     ganttDataArr.push(
                         {
                             id: allTasks[i]['_id'],
@@ -274,12 +274,31 @@ document.addEventListener('DOMContentLoaded', function() {
     displayMemberHours();
 
     const colors = Highcharts.getOptions().colors;
-    console.log('gant arr')
-    console.log(ganttDataArr.length)
+
+
+    function calculateWBSChartHeight(arr) {
+        const baseHeight = 200; // Minimum height
+        const additionalHeightPerItem = 50; // Additional height per item
+    
+        const rowCount = Math.ceil(items.length / wbsColumns);
+    
+        // Calculate height based on item count
+        let height = baseHeight + Math.max(0, (itemCount - 5)) * additionalHeightPerItem;
+    
+        // Ensure the height doesn't exceed the maxHeight
+        height = Math.min(height, maxHeight);
+    
+        // Ensure the height is not less than the baseHeight
+        height = Math.max(height, baseHeight);
+    
+        return height;
+    }
+    
+
     // WBS chart --------------------------------------------------------
     Highcharts.chart('wbs-container', {
         chart: {
-            height: ganttDataArr.length * 40,//800,
+            height: 100 + ganttDataArr.length * 50,//800,
             inverted: true
         },
 
@@ -305,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
             nodePadding: 20,
             hangingIndentTranslation: 'cumulative',
             hangingIndent: 20,
-            data: dataArr,
+            data: wbsDataArr,
             levels: [
                 {
                     level: 0,
@@ -329,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     color: colors[4]
                 }
             ],
-            nodes: nodesArr,
+            nodes: wbsNodesArr,
             colorByPoint: false,
             // color: '#007ad0',
             dataLabels: {
@@ -352,133 +371,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const day = 24 * 36e5,
         today = Math.floor(Date.now() / day) * day;
 
-    // const option1 = {
-    //     chart: {
-    //         // styledMode: true
-    //         plotBackgroundColor: 'rgba(128,128,128,0.02)',
-    //         plotBorderColor: 'rgba(128,128,128,0.1)',
-    //         plotBorderWidth: 1
-    //     },
-    //     title: {
-    //         text: projectTitle,
-    //     },
-    //     xAxis: [{
-    //         currentDateIndicator: {
-    //             color: '#2caffe',
-    //             dashStyle: 'ShortDot',
-    //             width: 5,
-    //             label: {
-    //                 format: 'Today'
-    //             }
-    //         },
-    //         min: Date.parse(projectStartDate) - 7 * day || today - 60 * day,
-    //         max: Date.parse(projectEndDate) + 7 * day || today + 60 * day,
-    //         custom: {
-    //             today,
-    //             // weekendPlotBands: true
-    //         }
-    //     }],
-    //     yAxis: {
-    //         uniqueNames: true,
-    //         type: 'category',
-    //         grid: {
-    //             enabled: true,
-    //             borderColor: 'rgba(0,0,0,0.3)',
-    //             borderWidth: 1,
-    //             columns: [{
-    //                 title: {
-    //                     text: 'Task'
-    //                 },
-    //                 labels: {
-    //                     format: '{point.name}'
-    //                 }
-    //             }, {
-    //                 title: {
-    //                     text: 'Action'
-    //                 },
-    //                 labels: {
-    //                     format: "<div class='button-container'>" + 
-    //                             "<button class='btn btn-info btn-sm editTaskBtn' title='Edit Task' id='ganttEditBtn-{point.y}-{point.id}' type='button'>" + 
-    //                             "<i class='bi bi-pencil-square'></i>" +
-    //                             "</button>" + 
-    //                             "<button class='btn btn-danger btn-sm deleteTaskBtn' title='Delete Task' id='ganttDeleteBtn-{point.y}-{point.id}' type='button'>" + 
-    //                             "<i class='bi bi-trash'></i>" + 
-    //                             "</button>" + 
-    //                             "</div>",
-    //                     useHTML: true,
-    //                 }
-    //             }]
-    //         },
-    //     },
-    //     navigator: {
-    //         enabled: true,
-    //         liveRedraw: true,
-    //         stickToMax: false,
-    //         handles: {
-    //             // backgroundColor: '',
-    //             borderColor: 'blue'
-    //         },
-    //         series: {
-    //             type: 'gantt',
-    //             pointPlacement: 0.5,
-    //             pointPadding: 0.25,
-    //             accessibility: {
-    //                 enabled: false
-    //             }
-    //         },
-    //         // yAxis: {
-    //         //     min: 0,
-    //         //     max: 3,
-    //         //     reversed: true,
-    //         //     categories: []
-    //         // }
-    //     },
-
-    //     scrollbar: {
-    //         enabled: true
-    //     },
-    //     rangeSelector: {
-    //         enabled: true,
-    //         selected: 5
-    //     },
-    //     accessibility: {
-    //         keyboardNavigation: {
-    //             seriesNavigation: {
-    //                 mode: 'serialize'
-    //             }
-    //         },
-    //         // point: {
-    //         //     descriptionFormat: '{yCategory}. ' +
-    //         //         '{#if point.completed}Task {completed.amount} % ' +
-    //         //         'completed. {/if}' +
-    //         //         'Start {x:%Y-%m-%d}, end {x2:%Y-%m-%d}.'
-    //         // },
-    //         // series: {
-    //         //     descriptionFormat: '{name}'
-    //         // },
-    //     },
-    //     series: [{
-    //         name: projectTitle,
-    //         data: ganttDataArr,
-    //         dataLabels: [{
-    //             enabled: true,
-    //             format: '<div style="width: 20px; height: 20px; overflow: ' +
-    //                 'hidden; border-radius: 50%; margin-left: -5px">' +
-    //                 '<img src="https://www.gravatar.com/avatar/{point.id}" ' +
-    //                 'style="width: 30px; margin-left: -5px; margin-top: -2px">' +
-    //                 '</div>',
-    //             useHTML: true,
-    //             // align: 'left'
-    //         }]
-    //     }],
-    //     tooltip: {
-    //         pointFormat: '<div style="z-index:100"></div><span style="font-weight: bold">{point.name}</span><br>' +
-    //             '{point.start:%e %b} → {point.end:%e %b} <br>' +
-    //             'Completed: {#if point.completed.amount > 0}{(multiply point.completed.amount 100):.0f}{/if} %<br>' +
-    //             'Owner: {#if point.owner}{point.owner}{else} - {/if}</div>'
-    //     },
-        
-    // }
 
     const ganttOptions = { 
         chart: {

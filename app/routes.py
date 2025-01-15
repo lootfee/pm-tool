@@ -62,7 +62,7 @@ def index(): # projects page
 
     all_projects = []
     _all_user_projects = USER_PROJECTS.find_one({'user_id': current_user.id})
-    # print(_all_user_projects)
+    
     if _all_user_projects is not None:
         all_user_projects = _all_user_projects['projects']
         for project in all_user_projects:
@@ -76,8 +76,6 @@ def index(): # projects page
 @login_required
 @user_project_required
 def project(project_id):
-    # print(request.args.get('active_tab', str))
-    # print(request.referrer)
     project = PROJECTS.find_one(ObjectId(project_id))
     _sorted_tasks = []
     sorted_tasks = sort_tasks(project_id, "0", _sorted_tasks)
@@ -92,7 +90,6 @@ def project(project_id):
     form.dependency.choices = [("0", "None")]
     
     all_tasks = []
-    pprint(_sorted_tasks)
     for task in sorted_tasks:
         def format_date(date):
             try:
@@ -129,7 +126,7 @@ def project(project_id):
         form.parent_task.choices.append((task['_id'], f'{task['task_number']} {task['title']}'))
         form.dependency.choices.append((task['_id'], f'{task['task_number']} {task['title']}'))
 
-    # pprint(all_tasks)
+    
     active_tab = request.args.get('active_tab', str)
     valid_tabs = ["nav-kanban-tab", "nav-gantt-tab", "nav-wbs-tab"]
     if not active_tab or active_tab not in valid_tabs:
@@ -139,8 +136,8 @@ def project(project_id):
     valid_form = True
     if request.method == 'POST':
         valid_form = form.validate()
-    # print(form.errors)
-    # print(valid_form)
+    
+    
     if form.validate_on_submit():
         task_id = form.task_id.data
         task_number = form.task_number.data
@@ -180,7 +177,7 @@ def project(project_id):
         except InvalidId:
             parent_task_id = "0"
             level = 0
-        # print(f'task id: {task_id}')
+        
         # print({'project_id': project_id, "task_number": task_number, "title": title, 
         #                             "expected_start_date": expected_start_date, "expected_end_date": expected_end_date, 
         #                             "actual_start_date": actual_start_date, "actual_end_date": actual_end_date,
@@ -230,6 +227,23 @@ def project(project_id):
                            project_start_date=project["start_date"], project_end_date=project["end_date"], form=form, 
                            all_tasks=all_tasks, active_tab=active_tab, valid_form=valid_form, work_days=project['work_days'],
                            project_members=project_members, project_total_hours=project["total_hours"])
+    
+    
+
+@app.route('/project/<project_id>/tasks/<task_id>/delete', methods=['POST'])
+@login_required
+@user_project_required
+@project_team_leader_required
+def delete_task(project_id, task_id):
+    task = TASKS.find_one({"_id": ObjectId(task_id), "project_id": str(project_id)})
+    if not task:
+        flash('Task not found.', 'alert-danger')
+        return redirect(request.referrer)
+    
+    # Delete the task
+    TASKS.delete_one({"_id": ObjectId(task_id)})
+    flash('Task deleted successfully.', 'alert-success')
+    return redirect(request.referrer)
 
 
 
