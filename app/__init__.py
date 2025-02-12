@@ -8,6 +8,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from flask_bootstrap import Bootstrap5
 from msal import ConfidentialClientApplication
+from werkzeug.middleware.profiler import ProfilerMiddleware
 
 # initialize app and logging
 app = Flask(__name__)
@@ -63,7 +64,5 @@ except Exception as e:
     msal_app = None
     app.logger.error("Microsoft authentication initialization failed!")
     
-
-
 
 from app import routes

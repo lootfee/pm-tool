@@ -75,13 +75,17 @@ def index(): # projects page
 @app.route('/project/<string:project_id>/', methods=['GET', 'POST'])
 @login_required
 @user_project_required
+# @profile #line_profiler
 def project(project_id):
     project = PROJECTS.find_one(ObjectId(project_id))
     _sorted_tasks = []
-    sorted_tasks = sort_tasks(project_id, "0", _sorted_tasks)
+    # sorted_tasks = sort_tasks(project_id, "0", _sorted_tasks)
+    sorted_tasks = sort_tasks(project_id)
     project_members = []
+    project_members_dict = {}
     for member in project['members']:
         m = USERS.find_one(ObjectId(member))
+        project_members_dict[member] = m
         project_members.append((str(m['_id']), m['name']))
     
     form = TaskForm()
@@ -105,9 +109,10 @@ def project(project_id):
         owner_pics = []
         owner_names = []
         for owner_id in task['owners']:
-            owner_names.append(get_user(owner_id)['name'])
+            owner_names.append(project_members_dict[owner_id]['name'])
+            # owner_names.append(project_member_details(ObjectId(owner_id))['name'])
             try:
-                owner_pics.append(url_for('static', filename='profile_pics/' + get_user(owner_id)['profile_pic']))
+                owner_pics.append(url_for('static', filename='profile_pics/' + project_members_dict[owner_id]['profile_pic']))
             except KeyError:
                 owner_pics.append(url_for('static', filename='default-avatar.png'))
         try:

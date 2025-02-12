@@ -55,12 +55,44 @@ def project_team_leader_required(f):
 
 
 # sort tasks by hierarchy and by parent
-def sort_tasks(project_id: str, parent_task_id: str, task_list: list):
-    _tasks = sorted(list(TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})), key=lambda d: d['hierarchy'])
-    for t in _tasks:
-        task_list.append(t)
-        sort_tasks(project_id, str(t["_id"]), task_list)
-    return task_list
+# def sort_tasks(project_id: str, parent_task_id: str, task_list: list):
+#     _tasks = sorted(list(TASKS.find({"project_id": project_id, "parent_task_id": parent_task_id})), key=lambda d: d['hierarchy'])
+#     for t in _tasks:
+#         task_list.append(t)
+#         sort_tasks(project_id, str(t["_id"]), task_list)
+#     return task_list
+
+def sort_tasks(project_id: str) -> list:
+    """
+    Loads all tasks for a given project exactly once from the DB,
+    then returns a list of tasks sorted by hierarchy in a parent->child order.
+    """
+
+    # 1) Load all tasks at once
+    all_tasks = list(TASKS.find({"project_id": project_id}))
+
+    # 2) Build a map of parent_task_id -> list of child tasks
+    tasks_by_parent = {}
+    for t in all_tasks:
+        parent_id = t.get("parent_task_id", "0")
+        tasks_by_parent.setdefault(parent_id, []).append(t)
+
+    # 3) Recursive function to collect tasks in sorted order
+    def _collect_sorted(parent_id: str, result: list):
+        # Get tasks under this parent_id
+        children = tasks_by_parent.get(parent_id, [])
+        # Sort them by 'hierarchy' or any other criteria
+        children.sort(key=lambda d: d["hierarchy"])
+
+        for child in children:
+            result.append(child)
+            # Recurse for this child's children
+            _collect_sorted(str(child["_id"]), result)
+
+    # 4) Start with parent_task_id="0" or whatever your root is
+    sorted_list = []
+    _collect_sorted("0", sorted_list)
+    return sorted_list
 
 
 # updating child tasks of each tasks
