@@ -484,41 +484,42 @@ document.addEventListener('DOMContentLoaded', function() {
                                 "</div>",
                         useHTML: true,
                     }
-                }, {title: {
-                        text: 'Optimistic Duration'
-                    },
-                    labels: {
-                        format: '{point.optimistic_duration}'
-                    }
-                }, {
-                    title: {
-                        text: 'Expected Duration'
-                    },
-                    labels: {
-                        format: '{point.expected_duration}'
-                    }
-                }, {
-                    title: {
-                        text: 'Pessimistic Duration'
-                    },
-                    labels: {
-                        format: '{point.pessimistic_duration}'
-                    }
-                }, {
-                    title: {
-                        text: 'Reserve Analysis'
-                    },
-                    labels: {
-                        format: '{point.reserve_analysis}'
-                    }
-                }, {
-                    title: {
-                        text: 'Final Estimate'
-                    },
-                    labels: {
-                        format: '{point.final_estimate}'
-                    }
-                }]
+                 }, //{title: {
+                //         text: 'Optimistic Duration'
+                //     },
+                //     labels: {
+                //         format: '{point.optimistic_duration}'
+                //     }
+                // }, {
+                //     title: {
+                //         text: 'Expected Duration'
+                //     },
+                //     labels: {
+                //         format: '{point.expected_duration}'
+                //     }
+                // }, {
+                //     title: {
+                //         text: 'Pessimistic Duration'
+                //     },
+                //     labels: {
+                //         format: '{point.pessimistic_duration}'
+                //     }
+                // }, {
+                //     title: {
+                //         text: 'Reserve Analysis'
+                //     },
+                //     labels: {
+                //         format: '{point.reserve_analysis}'
+                //     }
+                // }, {
+                //     title: {
+                //         text: 'Final Estimate'
+                //     },
+                //     labels: {
+                //         format: '{point.final_estimate}'
+                //     }
+                // }
+                ]
             },
             gridLineWidth: 1,
             labels: {

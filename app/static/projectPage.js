@@ -141,6 +141,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function calculateActualDuration(){
+        let startDate = new Date(formElements.actual_start_date.value);
+        let endDate = new Date(formElements.actual_end_date.value);
+        let actualDuration = 0;
+        while (endDate >= startDate){
+            const dayOfWeek = endDate.getUTCDay();
+            actualDuration += getWorkHoursForDay(dayOfWeek);
+            endDate.setDate(endDate.getDate() - 1);
+        }
+
+        formElements.total_actual_duration.value = parseFloat(actualDuration);
+    }
+
     // Add event listeners with debounce for recalculating end date
     ['input', 'change'].forEach(event => {
         formElements.optimistic_duration.addEventListener(event, debounce(calculateEndDate));
@@ -192,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (actualEndDate) {
             completionField.value = 100; // Task is completed
+            calculateActualDuration();
         } else if (actualStartDate) {
             if (completionField.value == 0) {
                 completionField.value = 1; // Ensure minimum completion of 1% if started
@@ -271,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (task.completion === 0 && !task.actual_start_date) {
             return 'kb-to-do';
         }
-        return 'kb-on-hold';
+        // return 'kb-on-hold';
     }
 
     // Add a task to a Kanban column

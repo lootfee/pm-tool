@@ -2,19 +2,19 @@
 
 {% block content %}
 <div class="container my-5">
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-center">
         <div class="col-10">
             <h3 class="fw-bold text-primary">Projects</h3>
         </div>
         <div class="col-2 text-end">
-            <button title="New Project" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
-                <i class="bi bi-folder-plus me-1"></i> New Project
+            <button title="New Project" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+                <i class="bi bi-folder-plus me-2"></i> New Project
             </button>
         </div>
     </div>
 
     <!-- Header Row for Project Details -->
-    <div class="row fw-semibold text-muted border-bottom py-2">
+    <div class="row fw-semibold text-muted border-bottom py-3 bg-light rounded-top">
         <div class="col-3">Title</div>
         <div class="col-5">Description</div>
         <div class="col-2">Start Date</div>
@@ -23,9 +23,9 @@
 
     <!-- Project Items -->
     {% for project in projects %}
-    <div class="row align-items-center">
+    <div class="row align-items-center transition-all">
         <a href="{{ url_for('project', project_id=project['_id']) }}" class="text-decoration-none col-12">
-            <div class="row py-3 border-bottom project-item">
+            <div class="row py-3 border-bottom project-item hover-shadow">
                 <div class="col-3 text-primary fw-medium">
                     {{ project['title'] }}
                 </div>
@@ -51,139 +51,70 @@
     {% if form.csrf_token.errors %}
         <div class="warning">You have submitted an invalid CSRF token</div>
     {% endif %}
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="newProjectLabel">New Project</h5>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content shadow-lg">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title text-primary" id="newProjectLabel">New Project</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <div class="mb-3">
-                {{ form.name.label(class="form-label")}}
-                {{ form.name(class="form-control") }}
+                {{ form.name.label(class="form-label fw-medium")}}
+                {{ form.name(class="form-control form-control-lg") }}
                 {% for error in form.name.errors %}
-                    <div class="text-danger">{{ error }}</div>
+                    <div class="text-danger small">{{ error }}</div>
                 {% endfor %}
             </div>
             <div class="mb-3">
-                {{ form.description.label(class="form-label")}}
-                {{ form.description(class="form-control") }}
-                <div class="d-flex justify-content-end fs-6 text-body-tertiary" id="character-count">0 / 100 characters</div>
+                {{ form.description.label(class="form-label fw-medium")}}
+                {{ form.description(class="form-control form-control-lg", rows="3") }}
+                <div class="d-flex justify-content-end fs-6 text-muted mt-1" id="character-count">0 / 100 characters</div>
                 {% for error in form.description.errors %}
-                    <div class="text-danger">{{ error }}</div>
+                    <div class="text-danger small">{{ error }}</div>
                 {% endfor %}
             </div>
             <div class="row">
                 <div class="col-6 mb-3">
-                    {{ form.start_date.label(class="form-label")}}
-                    {{ form.start_date(class="form-control") }}
+                    {{ form.start_date.label(class="form-label fw-medium")}}
+                    {{ form.start_date(class="form-control form-control-lg") }}
                     {% for error in form.start_date.errors %}
-                        <div class="text-danger">{{ error }}</div>
+                        <div class="text-danger small">{{ error }}</div>
                     {% endfor %}
                 </div>
                 <div class="col-6 mb-3">
-                    {{ form.end_date.label(class="form-label")}}
-                    {{ form.end_date(class="form-control") }}
+                    {{ form.end_date.label(class="form-label fw-medium")}}
+                    {{ form.end_date(class="form-control form-control-lg") }}
                     {% for error in form.end_date.errors %}
-                        <div class="text-danger">{{ error }}</div>
+                        <div class="text-danger small">{{ error }}</div>
                     {% endfor %}
                 </div>
             </div>
             <div class="mb-3">
-                <label class="form-label">Work Times</label>
-                <div class="row">
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.monday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.monday(class="form-control decimal-2", **{"aria-describedby": "monday_addon"}) }}
-                                <span class="input-group-text" id="monday_addon"> hrs</span>
+                <label class="form-label fw-medium">Work Times</label>
+                <div class="text-muted small">Set the expected number of hours you will have to work in each weekday. </div>
+                <div class="text-muted small">This will be used to calculate expected work hours for the project.</div>
+                <div class="text-muted small mb-2">This will also be used to make sure each task starts on a valid project work day.</div>
+                <div class="row g-3">
+                    {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] %}
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form[day].label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form[day](class="form-control form-control-lg decimal-2") }}
+                                    <span class="input-group-text bg-light">hrs</span>
+                                </div>
+                                {% for error in form[day].errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
                             </div>
-                            {% for error in form.monday.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.tuesday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.tuesday(class="form-control decimal-2", **{"aria-describedby": "tuesday_addon"}) }}
-                                <span class="input-group-text" id="tuesday_addon"> hrs</span>
-                            </div>
-                            {% for error in form.tuesday.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.wednesday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.wednesday(class="form-control decimal-2", **{"aria-describedby": "wednesday_addon"}) }}
-                                <span class="input-group-text" id="wednesday_addon"> hrs</span>
-                            </div>
-                            {% for error in form.wednesday.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.thursday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.thursday(class="form-control decimal-2", **{"aria-describedby": "thursday_addon"}) }}
-                                <span class="input-group-text" id="thursday_addon"> hrs</span>
-                            </div>
-                            {% for error in form.thursday.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.friday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.friday(class="form-control decimal-2", **{"aria-describedby": "friday_addon"}) }}
-                                <span class="input-group-text" id="friday_addon"> hrs</span>
-                            </div>
-                            {% for error in form.friday.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.saturday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.saturday(class="form-control decimal-2", **{"aria-describedby": "saturday_addon"}) }}
-                                <span class="input-group-text" id="saturday_addon"> hrs</span>
-                            </div>
-                            {% for error in form.saturday.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="mb-3">
-                            {{ form.sunday.label(class="form-label")}}
-                            <div class="input-group">
-                                {{ form.sunday(class="form-control decimal-2", **{"aria-describedby": "sunday_addon"}) }}
-                                <span class="input-group-text" id="sunday_addon"> hrs</span>
-                            </div>
-                            {% for error in form.sunday.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>          
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary btn-lg">Save</button>
         </div>
       </div>
     </div>
@@ -194,8 +125,29 @@
 {% block styles %}
 {{ super() }}
 <style>
-    .project-item:hover {
-        background-color: #f8f9fa;
+    .hover-shadow:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+    }
+    .form-control-lg {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    .modal-content {
+        border-radius: 12px;
+    }
+    .modal-header, .modal-footer {
+        border: none;
+    }
+    .bg-light {
+        background-color: #f8f9fa !important;
     }
 </style>
 {% endblock %}

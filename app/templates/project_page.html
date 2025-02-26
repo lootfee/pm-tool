@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block styles %}
 {{ super() }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt/dist/frappe-gantt.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='hcharts.css')}}">
 <link rel="stylesheet" href="{{ url_for('static', filename='projectPage.css')}}">
 <style type="text/css">
@@ -284,7 +285,6 @@
 
 {% block scripts %}
 
-<!-- <script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script> -->
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/gantt/modules/gantt.js"></script>
 <script src="https://code.highcharts.com/modules/sankey.js"></script>
@@ -293,6 +293,7 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/gantt/modules/pattern-fill.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
 
 <script>
   // to be used in hcharts.js

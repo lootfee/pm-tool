@@ -75,10 +75,9 @@ def index(): # projects page
 @app.route('/project/<string:project_id>/', methods=['GET', 'POST'])
 @login_required
 @user_project_required
-# @profile #line_profiler
 def project(project_id):
     project = PROJECTS.find_one(ObjectId(project_id))
-    _sorted_tasks = []
+    # _sorted_tasks = []
     # sorted_tasks = sort_tasks(project_id, "0", _sorted_tasks)
     sorted_tasks = sort_tasks(project_id)
     project_members = []
@@ -295,8 +294,9 @@ def edit_project(project_id):
                     break
             current_date += timedelta(days=1)
         
-        PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$set': {"title": title, "description": description, "start_date": start_date, "end_date": end_date, 'members': [current_user.id], 
-                                           'work_days': work_days, 'total_hours': total_hours}}, upsert=False)
+        PROJECTS.update_one({'_id': ObjectId(project_id)}, {'$set': {"title": title, "description": description, 
+                                    "start_date": start_date, "end_date": end_date, 
+                                    'work_days': work_days, 'total_hours': total_hours}}, upsert=False)
         
         # create_notification(current_user.id, f'Project {title} has been updated')
         create_project_log(project_id, current_user.id, 'Project', f'Project {title} updated')
